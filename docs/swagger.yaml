@@ -1,0 +1,137 @@
+definitions:
+  models.UserCreate:
+    description: User create model
+    properties:
+      email:
+        example: test@test.ru
+        format: email
+        type: string
+      password:
+        example: test
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.UserDb:
+    description: User db model
+    properties:
+      email:
+        example: test@test.ru
+        format: email
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+    required:
+    - email
+    type: object
+  models.UserDto:
+    description: User dto model
+    properties:
+      email:
+        example: test@test.ru
+        format: email
+        type: string
+      id:
+        example: 1
+        type: integer
+    required:
+    - email
+    - id
+    type: object
+  models.UserLogin:
+    description: User login model
+    properties:
+      email:
+        example: test@test.ru
+        format: email
+        type: string
+      password:
+        example: test
+        type: string
+    required:
+    - email
+    - password
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: This is a sample server for Profbuh API.
+  title: Profbuh API
+paths:
+  /api/v1/test:
+    get:
+      consumes:
+      - application/json
+      description: Test middleware
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current user
+          schema:
+            $ref: '#/definitions/models.UserDb'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Test middleware
+      tags:
+      - test
+  /auth/user/create:
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: User create info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/models.UserDto'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - user
+  /auth/user/login:
+    post:
+      consumes:
+      - application/json
+      description: Login user
+      parameters:
+      - description: User login info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Login user
+      tags:
+      - user
+swagger: "2.0"

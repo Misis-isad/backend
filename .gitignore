@@ -1,0 +1,5 @@
+.vscode
+*.sql
+.env
+.env.run
+*.log
