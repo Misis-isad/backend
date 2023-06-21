@@ -50,6 +50,113 @@ const docTemplate = `{
                 }
             }
         },
+        "/article/create": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create article",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "Create article",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Article create info",
+                        "name": "article",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{record_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get article for record by record_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "Get article",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Article",
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/user/create": {
             "post": {
                 "description": "Create user",
@@ -76,9 +183,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created user",
+                        "description": "Created token for user",
                         "schema": {
-                            "$ref": "#/definitions/models.UserDto"
+                            "$ref": "#/definitions/models.TokenResponse"
                         }
                     },
                     "400": {
@@ -118,6 +225,149 @@ const docTemplate = `{
                     "200": {
                         "description": "Token",
                         "schema": {
+                            "$ref": "#/definitions/models.TokenResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/record/all": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all records(not articles) for current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "Get records by user",
+                "responses": {
+                    "200": {
+                        "description": "User's records",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.RecordDto"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/record/create": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "Create record",
+                "parameters": [
+                    {
+                        "description": "Record create info",
+                        "name": "record",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RecordCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created record",
+                        "schema": {
+                            "$ref": "#/definitions/models.RecordDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/record/{record_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get record by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "Get record by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Record",
+                        "schema": {
+                            "$ref": "#/definitions/models.RecordDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
                             "type": "string"
                         }
                     },
@@ -132,11 +382,144 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.ArticleCreate": {
+            "description": "Article create model",
+            "type": "object",
+            "required": [
+                "body"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "format": "html",
+                    "example": "{html page}"
+                }
+            }
+        },
+        "models.ArticleDto": {
+            "description": "Article dto model",
+            "type": "object",
+            "required": [
+                "body",
+                "created_at",
+                "id"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "format": "html",
+                    "example": "{html page}"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2021-01-01T00:00:00Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "models.RecordCreate": {
+            "description": "Record create model",
+            "type": "object",
+            "required": [
+                "title",
+                "video_link"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "example": "title"
+                },
+                "video_link": {
+                    "type": "string",
+                    "format": "url",
+                    "example": "https://www.youtube.com/watch?v=4O3UGW-Bbbw"
+                }
+            }
+        },
+        "models.RecordDto": {
+            "description": "Record dto model",
+            "type": "object",
+            "required": [
+                "author_id",
+                "id",
+                "status",
+                "title",
+                "video_link",
+                "visibility"
+            ],
+            "properties": {
+                "author_id": {
+                    "description": "MainArticleId int          ` + "`" + `json:\"main_article_id\" binding:\"required\" example:\"1\"` + "`" + `",
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.RecordStatus"
+                        }
+                    ],
+                    "example": "В обработке"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "title"
+                },
+                "video_link": {
+                    "type": "string",
+                    "format": "url",
+                    "example": "https://www.youtube.com/watch?v=4O3UGW-Bbbw"
+                },
+                "visibility": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.RecordStatus": {
+            "type": "string",
+            "enum": [
+                "В обработке",
+                "Обработано",
+                "Опубликовано"
+            ],
+            "x-enum-varnames": [
+                "ProcessingRecordStatus",
+                "CompletedRecordStatus",
+                "PublicRecordStatus"
+            ]
+        },
+        "models.TokenResponse": {
+            "description": "Token response model",
+            "type": "object",
+            "required": [
+                "token",
+                "token_type"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+                },
+                "token_type": {
+                    "type": "string",
+                    "example": "Bearer"
+                }
+            }
+        },
         "models.UserCreate": {
             "description": "User create model",
             "type": "object",
             "required": [
                 "email",
+                "fio",
                 "password"
             ],
             "properties": {
@@ -144,6 +527,10 @@ const docTemplate = `{
                     "type": "string",
                     "format": "email",
                     "example": "test@test.ru"
+                },
+                "fio": {
+                    "type": "string",
+                    "example": "Мисосов Мисос Мисосович"
                 },
                 "password": {
                     "type": "string",
@@ -154,39 +541,18 @@ const docTemplate = `{
         "models.UserDb": {
             "description": "User db model",
             "type": "object",
-            "required": [
-                "email"
-            ],
             "properties": {
                 "email": {
-                    "type": "string",
-                    "format": "email",
-                    "example": "test@test.ru"
+                    "type": "string"
+                },
+                "fio": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "password": {
                     "type": "string"
-                }
-            }
-        },
-        "models.UserDto": {
-            "description": "User dto model",
-            "type": "object",
-            "required": [
-                "email",
-                "id"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "format": "email",
-                    "example": "test@test.ru"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
                 }
             }
         },

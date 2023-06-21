@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"profbuh/internal/api"
@@ -17,31 +16,32 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//	@title			Profbuh API
-//	@description	This is a sample server for Profbuh API.
+// @title			Profbuh API
+// @description	This is a sample server for Profbuh API.
 //
-//	@host			localhost:8000
+// @host			localhost:8000
 func main() {
-	err := logging.InitLog()
+	err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("Can't init log: %v", err)
 		os.Exit(1)
 	}
 
-	logging.Log.Debug("Starting up")
-
-	err = config.LoadConfig()
+	err = logging.InitLog()
 	if err != nil {
-		logging.Log.Fatalf("Can't load config: %v", err)
+		fmt.Printf("Can't init log: %v", err)
+		os.Exit(1)
 	}
+
+	logging.Log.Info("Starting server")
 
 	db, err := database.InitDb(&config.Cfg)
 	if err != nil {
 		logging.Log.Fatalf("Can't init db: %v", err)
 	}
-	if err := db.Pool.Ping(context.Background()); err != nil {
-		logging.Log.Fatalf("Can't access db: %v", err)
-	}
+	defer db.Pool.Close()
+
+	logging.Log.Debug("Db connected")
 
 	apiClient := api.NewApiClient(db)
 
@@ -58,6 +58,11 @@ func main() {
 	router_api.Use(middlewares.JwtAuth())
 	{
 		router_api.GET("/test", apiClient.TestMiddleware)
+		router_api.POST("/article/create", apiClient.CreateArticleWithRecordId)
+		router_api.GET("/article/:record_id", apiClient.GetArticleForRecord)
+		router_api.POST("/record/create", apiClient.CreateRecord)
+		router_api.GET("/record/:record_id", apiClient.GetRecordById)
+		router_api.GET("/record/all", apiClient.GetRecordsByUser)
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

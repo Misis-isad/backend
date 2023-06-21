@@ -1,4 +1,102 @@
 definitions:
+  models.ArticleCreate:
+    description: Article create model
+    properties:
+      body:
+        example: '{html page}'
+        format: html
+        type: string
+    required:
+    - body
+    type: object
+  models.ArticleDto:
+    description: Article dto model
+    properties:
+      body:
+        example: '{html page}'
+        format: html
+        type: string
+      created_at:
+        example: "2021-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+    required:
+    - body
+    - created_at
+    - id
+    type: object
+  models.RecordCreate:
+    description: Record create model
+    properties:
+      title:
+        example: title
+        type: string
+      video_link:
+        example: https://www.youtube.com/watch?v=4O3UGW-Bbbw
+        format: url
+        type: string
+    required:
+    - title
+    - video_link
+    type: object
+  models.RecordDto:
+    description: Record dto model
+    properties:
+      author_id:
+        description: MainArticleId int          `json:"main_article_id" binding:"required"
+          example:"1"`
+        example: 1
+        type: integer
+      id:
+        example: 1
+        type: integer
+      status:
+        allOf:
+        - $ref: '#/definitions/models.RecordStatus'
+        example: В обработке
+      title:
+        example: title
+        type: string
+      video_link:
+        example: https://www.youtube.com/watch?v=4O3UGW-Bbbw
+        format: url
+        type: string
+      visibility:
+        example: true
+        type: boolean
+    required:
+    - author_id
+    - id
+    - status
+    - title
+    - video_link
+    - visibility
+    type: object
+  models.RecordStatus:
+    enum:
+    - В обработке
+    - Обработано
+    - Опубликовано
+    type: string
+    x-enum-varnames:
+    - ProcessingRecordStatus
+    - CompletedRecordStatus
+    - PublicRecordStatus
+  models.TokenResponse:
+    description: Token response model
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+    required:
+    - token
+    - token_type
+    type: object
   models.UserCreate:
     description: User create model
     properties:
@@ -6,40 +104,28 @@ definitions:
         example: test@test.ru
         format: email
         type: string
+      fio:
+        example: Мисосов Мисос Мисосович
+        type: string
       password:
         example: test
         type: string
     required:
     - email
+    - fio
     - password
     type: object
   models.UserDb:
     description: User db model
     properties:
       email:
-        example: test@test.ru
-        format: email
+        type: string
+      fio:
         type: string
       id:
         type: integer
       password:
         type: string
-    required:
-    - email
-    type: object
-  models.UserDto:
-    description: User dto model
-    properties:
-      email:
-        example: test@test.ru
-        format: email
-        type: string
-      id:
-        example: 1
-        type: integer
-    required:
-    - email
-    - id
     type: object
   models.UserLogin:
     description: User login model
@@ -82,6 +168,74 @@ paths:
       summary: Test middleware
       tags:
       - test
+  /article/{record_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get article for record by record_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Article
+          schema:
+            $ref: '#/definitions/models.ArticleDto'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get article
+      tags:
+      - article
+  /article/create:
+    post:
+      consumes:
+      - application/json
+      description: Create article
+      parameters:
+      - description: Record id
+        in: query
+        name: record_id
+        required: true
+        type: integer
+      - description: Article create info
+        in: body
+        name: article
+        required: true
+        schema:
+          $ref: '#/definitions/models.ArticleCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ArticleDto'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Create article
+      tags:
+      - article
   /auth/user/create:
     post:
       consumes:
@@ -98,9 +252,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created user
+          description: Created token for user
           schema:
-            $ref: '#/definitions/models.UserDto'
+            $ref: '#/definitions/models.TokenResponse'
         "400":
           description: Bad request
           schema:
@@ -126,7 +280,7 @@ paths:
         "200":
           description: Token
           schema:
-            type: string
+            $ref: '#/definitions/models.TokenResponse'
         "401":
           description: Unauthorized
           schema:
@@ -134,4 +288,94 @@ paths:
       summary: Login user
       tags:
       - user
+  /record/{record_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get record by id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get record by id
+      tags:
+      - record
+  /record/all:
+    get:
+      consumes:
+      - application/json
+      description: Get all records(not articles) for current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User's records
+          schema:
+            items:
+              $ref: '#/definitions/models.RecordDto'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get records by user
+      tags:
+      - record
+  /record/create:
+    post:
+      consumes:
+      - application/json
+      description: Create record
+      parameters:
+      - description: Record create info
+        in: body
+        name: record
+        required: true
+        schema:
+          $ref: '#/definitions/models.RecordCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Create record
+      tags:
+      - record
 swagger: "2.0"

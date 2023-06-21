@@ -1,22 +1,29 @@
 package logging
 
 import (
+	"io"
 	"os"
 
 	"github.com/sirupsen/logrus"
 	easy "github.com/t-tomalak/logrus-easy-formatter"
 )
 
-type log struct {
-	*logrus.Logger
-}
-
-var Log *log
+var Log *logrus.Logger
 
 func InitLog() error {
-	Log = &log{
-		logrus.New(),
+	Log = logrus.New()
+
+	logFile, err := os.OpenFile("backend.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return err
 	}
+	mw := io.MultiWriter(os.Stdout, logFile)
+	Log.SetOutput(mw)
+
+	Log.SetFormatter(&easy.Formatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		LogFormat:       "[%lvl%]: %time% - %msg%\n",
+	})
 
 	logLevel := os.Getenv("LOG_LEVEL")
 	switch logLevel {
@@ -30,17 +37,5 @@ func InitLog() error {
 		Log.SetLevel(logrus.InfoLevel)
 	}
 
-	Log.SetFormatter(&easy.Formatter{
-		TimestampFormat: "2023-06-20 14:30:00",
-		LogFormat:       "[%lvl%]: %time% - %msg%\n",
-	})
-
-	// logFile, err := os.OpenFile("backend.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	// if err != nil {
-	// 	return err
-	// }
-	// // defer logFile.Close()
-	// // mw := io.MultiWriter(os.Stdout, logFile)
-	// // Log.SetOutput(mw)
 	return nil
 }
