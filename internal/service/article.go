@@ -5,11 +5,11 @@ import (
 	"profbuh/internal/database/crud"
 	"profbuh/internal/models"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
-func CreateArticleWithRecordId(db *pgxpool.Pool, c context.Context, articleData models.ArticleCreate, recordId int) (models.ArticleDto, error) {
-	article, err := crud.CreateArticleWithRecordId(db, c, articleData, recordId)
+func CreateArticleWithRecordID(db *gorm.DB, c context.Context, articleData models.ArticleCreate, recordID uint) (models.ArticleDto, error) {
+	article, err := crud.CreateArticleWithRecordID(db, c, articleData, recordID)
 	if err != nil {
 		return models.ArticleDto{}, err
 	}
@@ -17,8 +17,8 @@ func CreateArticleWithRecordId(db *pgxpool.Pool, c context.Context, articleData 
 	return article, nil
 }
 
-func GetArticleForRecord(db *pgxpool.Pool, c context.Context, recordId int) (models.ArticleDto, error) {
-	article, err := crud.GetArticleForRecord(db, c, recordId)
+func GetArticleForRecord(db *gorm.DB, c context.Context, recordID uint) (models.ArticleDto, error) {
+	article, err := crud.GetArticleForRecord(db, c, recordID)
 	if err != nil {
 		return models.ArticleDto{}, err
 	}

@@ -5,10 +5,10 @@ import (
 	"profbuh/internal/database/crud"
 	"profbuh/internal/models"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
-func CreateRecord(db *pgxpool.Pool, c context.Context, recordData models.RecordCreate, email string) (models.RecordDto, error) {
+func CreateRecord(db *gorm.DB, c context.Context, recordData models.RecordCreate, email string) (models.RecordDto, error) {
 	userDb, err := crud.GetUserByEmail(db, c, email)
 	if err != nil {
 		return models.RecordDto{}, err
@@ -19,28 +19,19 @@ func CreateRecord(db *pgxpool.Pool, c context.Context, recordData models.RecordC
 		return models.RecordDto{}, err
 	}
 
-	return record, err
+	return record, nil
 }
 
-func GetRecordById(db *pgxpool.Pool, c context.Context, recordId int, email string) (models.RecordDto, error) {
-	// userDb, err := crud.GetUserByEmail(db, c, email)
-	// if err != nil {
-	// 	return models.RecordDto{}, err
-	// }
-
-	record, err := crud.GetRecordById(db, c, recordId)
+func GetRecordByID(db *gorm.DB, c context.Context, recordID int, email string) (models.RecordDto, error) {
+	record, err := crud.GetRecordByID(db, c, recordID)
 	if err != nil {
 		return models.RecordDto{}, err
 	}
 
-	// if userDb.Id != record.AuthorId {
-	// 	return models.RecordDto{}, err
-	// }
-
-	return record, err
+	return record, nil
 }
 
-func GetRecordsByUser(db *pgxpool.Pool, c context.Context, email string) ([]models.RecordDto, error) {
+func GetRecordsByUser(db *gorm.DB, c context.Context, email string) ([]models.RecordDto, error) {
 	userDb, err := crud.GetUserByEmail(db, c, email)
 	if err != nil {
 		return []models.RecordDto{}, err
@@ -51,5 +42,19 @@ func GetRecordsByUser(db *pgxpool.Pool, c context.Context, email string) ([]mode
 		return []models.RecordDto{}, err
 	}
 
-	return records, err
+	return records, nil
+}
+
+func PublishRecord(db *gorm.DB, c context.Context, recordID uint, email string) (models.RecordDto, error) {
+	user, err := crud.GetUserByEmail(db, c, email)
+	if err != nil {
+		return models.RecordDto{}, err
+	}
+
+	record, err := crud.PublishRecord(db, c, recordID, user)
+	if err != nil {
+		return models.RecordDto{}, err
+	}
+
+	return record, nil
 }

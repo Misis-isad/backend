@@ -1,4 +1,14 @@
 definitions:
+  models.Article:
+    description: Article db model
+    properties:
+      body:
+        type: string
+      id:
+        type: integer
+      recordID:
+        type: integer
+    type: object
   models.ArticleCreate:
     description: Article create model
     properties:
@@ -16,16 +26,29 @@ definitions:
         example: '{html page}'
         format: html
         type: string
-      created_at:
-        example: "2021-01-01T00:00:00Z"
-        type: string
       id:
         example: 1
         type: integer
     required:
     - body
-    - created_at
     - id
+    type: object
+  models.Record:
+    properties:
+      article:
+        $ref: '#/definitions/models.Article'
+      hidden:
+        type: boolean
+      id:
+        type: integer
+      status:
+        $ref: '#/definitions/models.RecordStatus'
+      title:
+        type: string
+      userID:
+        type: integer
+      videoLink:
+        type: string
     type: object
   models.RecordCreate:
     description: Record create model
@@ -44,11 +67,9 @@ definitions:
   models.RecordDto:
     description: Record dto model
     properties:
-      author_id:
-        description: MainArticleId int          `json:"main_article_id" binding:"required"
-          example:"1"`
-        example: 1
-        type: integer
+      hidden:
+        example: true
+        type: boolean
       id:
         example: 1
         type: integer
@@ -63,27 +84,23 @@ definitions:
         example: https://www.youtube.com/watch?v=4O3UGW-Bbbw
         format: url
         type: string
-      visibility:
-        example: true
-        type: boolean
     required:
-    - author_id
+    - hidden
     - id
     - status
     - title
     - video_link
-    - visibility
     type: object
   models.RecordStatus:
     enum:
-    - В обработке
-    - Обработано
-    - Опубликовано
+    - processin
+    - completed
+    - published
     type: string
     x-enum-varnames:
     - ProcessingRecordStatus
     - CompletedRecordStatus
-    - PublicRecordStatus
+    - PublishedRecordStatus
   models.TokenResponse:
     description: Token response model
     properties:
@@ -96,6 +113,22 @@ definitions:
     required:
     - token
     - token_type
+    type: object
+  models.User:
+    description: User db model
+    properties:
+      email:
+        type: string
+      fio:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      records:
+        items:
+          $ref: '#/definitions/models.Record'
+        type: array
     type: object
   models.UserCreate:
     description: User create model
@@ -114,18 +147,6 @@ definitions:
     - email
     - fio
     - password
-    type: object
-  models.UserDb:
-    description: User db model
-    properties:
-      email:
-        type: string
-      fio:
-        type: string
-      id:
-        type: integer
-      password:
-        type: string
     type: object
   models.UserLogin:
     description: User login model
@@ -158,7 +179,7 @@ paths:
         "200":
           description: Current user
           schema:
-            $ref: '#/definitions/models.UserDb'
+            $ref: '#/definitions/models.User'
         "401":
           description: Unauthorized
           schema:
@@ -188,10 +209,6 @@ paths:
             $ref: '#/definitions/models.ArticleDto'
         "400":
           description: Bad request
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
           schema:
             type: string
       security:
@@ -225,10 +242,6 @@ paths:
             $ref: '#/definitions/models.ArticleDto'
         "400":
           description: Bad request
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
           schema:
             type: string
       security:
@@ -310,13 +323,36 @@ paths:
           description: Bad request
           schema:
             type: string
-        "401":
-          description: Unauthorized
+      security:
+      - Bearer: []
+      summary: Get record by id
+      tags:
+      - record
+  /record/{record_id}/publish:
+    post:
+      consumes:
+      - application/json
+      description: Publish record
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "400":
+          description: Bad request
           schema:
             type: string
       security:
       - Bearer: []
-      summary: Get record by id
+      summary: Publish record
       tags:
       - record
   /record/all:
@@ -335,10 +371,6 @@ paths:
             type: array
         "400":
           description: Bad request
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
           schema:
             type: string
       security:
@@ -367,10 +399,6 @@ paths:
             $ref: '#/definitions/models.RecordDto'
         "400":
           description: Bad request
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
           schema:
             type: string
       security:

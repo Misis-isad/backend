@@ -6,6 +6,7 @@ import (
 	"profbuh/internal/models"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // TestMiddleware godoc
@@ -16,18 +17,20 @@ import (
 //	@Accept			json
 //	@Produce		json
 //	@Security		Bearer
-//	@Success		200	{object}	models.UserDb	"Current user"
-//	@Failure		401	{string}	string			"Unauthorized"
+//	@Success		200	{object}	models.User	"Current user"
+//	@Failure		401	{string}	string		"Unauthorized"
 //	@Router			/api/v1/test [get]
-func (api *ApiClient) TestMiddleware(c *gin.Context) {
-	userDb, err := crud.GetUserByEmail(api.db.Pool, c.Request.Context(), c.GetString("x-user-email"))
+func TestMiddleware(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	userDb, err := crud.GetUserByEmail(db, c.Request.Context(), c.GetString("x-user-email"))
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, err.Error())
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, models.UserDto{
-		Id:    userDb.Id,
+		ID:    userDb.ID,
 		Email: userDb.Email,
 	})
 }

@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 // ArticleCreate model info
 //
 //	@Description	Article create model
@@ -12,18 +10,16 @@ type ArticleCreate struct {
 // ArticleDb model info
 //
 //	@Description	Article db model
-type ArticleDb struct {
-	Id        int
-	Body      string
-	RecordId  int
-	CreatedAt time.Time
+type Article struct {
+	ID       uint `gorm:"primaryKey"`
+	Body     string
+	RecordID uint
 }
 
 // ArticleDto model info
 //
 //	@Description	Article dto model
 type ArticleDto struct {
-	Id       int    `json:"id" binding:"required" example:"1"`
-	Body     string `json:"body" binding:"required" example:"{html page}" format:"html"`
-	RecordId int    `json:"record_id" binding:"required" example:"1"`
+	ID   uint   `json:"id" binding:"required" example:"1"`
+	Body string `json:"body" binding:"required" example:"{html page}" format:"html"`
 }

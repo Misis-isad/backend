@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type Claims struct {
@@ -18,7 +18,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func CreateAccessToken(userData models.UserDb) (string, error) {
+func CreateAccessToken(userData models.User) (string, error) {
 	key := []byte(config.Cfg.JwtSecret)
 
 	claims := Claims{
@@ -51,11 +51,12 @@ func VerifyPassword(password, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-func AuthenticateUser(db *pgxpool.Pool, c context.Context, userData models.UserLogin) (string, error) {
+func AuthenticateUser(db *gorm.DB, c context.Context, userData models.UserLogin) (string, error) {
 	userDb, err := crud.GetUserByEmail(db, c, userData.Email)
 	if err != nil {
 		return "", err
 	}
+
 	if ok := VerifyPassword(userData.Password, userDb.Password); ok != nil {
 		return "", errors.New("invalid credentials")
 	}

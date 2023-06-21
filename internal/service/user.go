@@ -5,11 +5,11 @@ import (
 	"profbuh/internal/database/crud"
 	"profbuh/internal/models"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-func CreateUser(db *pgxpool.Pool, c context.Context, userData models.UserCreate) (models.UserDto, error) {
+func CreateUser(db *gorm.DB, c context.Context, userData models.UserCreate) (models.UserDto, error) {
 	var err error
 	userData.Password, err = HashPassword(userData.Password)
 	if err != nil {
@@ -20,6 +20,7 @@ func CreateUser(db *pgxpool.Pool, c context.Context, userData models.UserCreate)
 	if err != nil {
 		return models.UserDto{}, err
 	}
+
 	return user, nil
 }
 

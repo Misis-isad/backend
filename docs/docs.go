@@ -38,7 +38,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Current user",
                         "schema": {
-                            "$ref": "#/definitions/models.UserDb"
+                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "401": {
@@ -98,12 +98,6 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 }
             }
@@ -144,12 +138,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -270,12 +258,6 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 }
             }
@@ -318,12 +300,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -370,9 +346,46 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                }
+            }
+        },
+        "/record/{record_id}/publish": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Publish record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "Publish record",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.RecordDto"
+                        }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "400": {
+                        "description": "Bad request",
                         "schema": {
                             "type": "string"
                         }
@@ -382,6 +395,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.Article": {
+            "description": "Article db model",
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "recordID": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.ArticleCreate": {
             "description": "Article create model",
             "type": "object",
@@ -401,7 +429,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "body",
-                "created_at",
                 "id"
             ],
             "properties": {
@@ -410,13 +437,35 @@ const docTemplate = `{
                     "format": "html",
                     "example": "{html page}"
                 },
-                "created_at": {
-                    "type": "string",
-                    "example": "2021-01-01T00:00:00Z"
-                },
                 "id": {
                     "type": "integer",
                     "example": 1
+                }
+            }
+        },
+        "models.Record": {
+            "type": "object",
+            "properties": {
+                "article": {
+                    "$ref": "#/definitions/models.Article"
+                },
+                "hidden": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.RecordStatus"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                },
+                "videoLink": {
+                    "type": "string"
                 }
             }
         },
@@ -443,18 +492,16 @@ const docTemplate = `{
             "description": "Record dto model",
             "type": "object",
             "required": [
-                "author_id",
+                "hidden",
                 "id",
                 "status",
                 "title",
-                "video_link",
-                "visibility"
+                "video_link"
             ],
             "properties": {
-                "author_id": {
-                    "description": "MainArticleId int          ` + "`" + `json:\"main_article_id\" binding:\"required\" example:\"1\"` + "`" + `",
-                    "type": "integer",
-                    "example": 1
+                "hidden": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "id": {
                     "type": "integer",
@@ -476,24 +523,20 @@ const docTemplate = `{
                     "type": "string",
                     "format": "url",
                     "example": "https://www.youtube.com/watch?v=4O3UGW-Bbbw"
-                },
-                "visibility": {
-                    "type": "boolean",
-                    "example": true
                 }
             }
         },
         "models.RecordStatus": {
             "type": "string",
             "enum": [
-                "В обработке",
-                "Обработано",
-                "Опубликовано"
+                "processin",
+                "completed",
+                "published"
             ],
             "x-enum-varnames": [
                 "ProcessingRecordStatus",
                 "CompletedRecordStatus",
-                "PublicRecordStatus"
+                "PublishedRecordStatus"
             ]
         },
         "models.TokenResponse": {
@@ -511,6 +554,30 @@ const docTemplate = `{
                 "token_type": {
                     "type": "string",
                     "example": "Bearer"
+                }
+            }
+        },
+        "models.User": {
+            "description": "User db model",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "fio": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Record"
+                    }
                 }
             }
         },
@@ -535,24 +602,6 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "example": "test"
-                }
-            }
-        },
-        "models.UserDb": {
-            "description": "User db model",
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "fio": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
                 }
             }
         },

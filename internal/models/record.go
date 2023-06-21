@@ -3,9 +3,9 @@ package models
 type RecordStatus string
 
 const (
-	ProcessingRecordStatus RecordStatus = "В обработке"
-	CompletedRecordStatus  RecordStatus = "Обработано"
-	PublicRecordStatus     RecordStatus = "Опубликовано"
+	ProcessingRecordStatus RecordStatus = "processin"
+	CompletedRecordStatus  RecordStatus = "completed"
+	PublishedRecordStatus  RecordStatus = "published"
 )
 
 // RecordCreate model info
@@ -16,28 +16,23 @@ type RecordCreate struct {
 	VideoLink string `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=4O3UGW-Bbbw" format:"url"`
 }
 
-// RecordDb model info
-//
-//	@Description	Record db model
-type RecordDb struct {
-	Id         int
-	Title      string
-	VideoLink  string
-	Status     RecordStatus
-	Visibility bool
-	// MainArticleId int
-	AuthorId int
+type Record struct {
+	ID        uint   `gorm:"primaryKey"`
+	Title     string `gorm:"unique"`
+	VideoLink string
+	Status    RecordStatus `gorm:"default:'processing'"`
+	Hidden    bool         `gorm:"default:true"`
+	UserID    uint
+	Article   Article
 }
 
 // RecordDto model info
 //
 //	@Description	Record dto model
 type RecordDto struct {
-	Id         int          `json:"id" binding:"required" example:"1"`
-	Title      string       `json:"title" binding:"required" example:"title"`
-	VideoLink  string       `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=4O3UGW-Bbbw" format:"url"`
-	Status     RecordStatus `json:"status" binding:"required" example:"В обработке"`
-	Visibility bool         `json:"visibility" binding:"required" example:"true"`
-	// MainArticleId int          `json:"main_article_id" binding:"required" example:"1"`
-	AuthorId int `json:"author_id" binding:"required" example:"1"`
+	ID        uint         `json:"id" binding:"required" example:"1"`
+	Title     string       `json:"title" binding:"required" example:"title"`
+	VideoLink string       `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=4O3UGW-Bbbw" format:"url"`
+	Status    RecordStatus `json:"status" binding:"required" example:"В обработке"`
+	Hidden    bool         `json:"hidden" binding:"required" example:"true"`
 }

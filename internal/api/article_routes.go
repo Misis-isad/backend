@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // CreateArticle godoc
@@ -16,28 +17,28 @@ import (
 //	@Tags			article
 //	@Accept			json
 //	@Produce		json
-//	@Param			record_id	query	int						true	"Record id"
+//	@Param			record_id	query	uint					true	"Record id"
 //	@Param			article		body	models.ArticleCreate	true	"Article create info"
 //	@Security		Bearer
 //	@Success		200	{object}	models.ArticleDto
 //	@Failure		400	{object}	string	"Bad request"
-//	@Failure		401	{object}	string	"Unauthorized"
 //	@Router			/article/create [post]
-func (api *ApiClient) CreateArticleWithRecordId(c *gin.Context) {
+func CreateArticleWithRecordID(c *gin.Context) {
 	var articleData models.ArticleCreate
+	db := c.MustGet("db").(*gorm.DB)
 
 	if err := c.ShouldBindJSON(&articleData); err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	recordId, err := strconv.Atoi(c.Query("record_id"))
+	recordID, err := strconv.ParseUint(c.Query("record_id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	article, err := service.CreateArticleWithRecordId(api.db.Pool, c, articleData, recordId)
+	article, err := service.CreateArticleWithRecordID(db, c, articleData, uint(recordID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -53,20 +54,21 @@ func (api *ApiClient) CreateArticleWithRecordId(c *gin.Context) {
 //	@Tags			article
 //	@Accept			json
 //	@Produce		json
-//	@Param			record_id	path	int	true	"Record id"
+//	@Param			record_id	path	uint	true	"Record id"
 //	@Security		Bearer
 //	@Success		200	{object}	models.ArticleDto	"Article"
 //	@Failure		400	{string}	string				"Bad request"
-//	@Failure		401	{object}	string				"Unauthorized"
 //	@Router			/article/{record_id} [get]
-func (api *ApiClient) GetArticleForRecord(c *gin.Context) {
-	recordId, err := strconv.Atoi(c.Param("record_id"))
+func GetArticleByRecordID(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	recordID, err := strconv.ParseUint(c.Param("record_id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	article, err := service.GetArticleForRecord(api.db.Pool, c, recordId)
+	article, err := service.GetArticleForRecord(db, c, uint(recordID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return

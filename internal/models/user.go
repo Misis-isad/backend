@@ -20,18 +20,19 @@ type UserLogin struct {
 // UserDb model info
 //
 //	@Description	User db model
-type UserDb struct {
-	Id       int
-	Email    string
+type User struct {
+	ID       uint   `gorm:"primaryKey"`
+	Email    string `gorm:"unique; index"`
 	Password string
 	Fio      string
+	Records  []Record
 }
 
 // UserDto model info
 //
 //	@Description	User dto model
 type UserDto struct {
-	Id    int    `json:"id" binding:"required" example:"1"`
+	ID    uint   `json:"id" binding:"required" example:"1"`
 	Email string `json:"email" binding:"required" format:"email" example:"test@test.ru"`
 	Fio   string `json:"fio" binding:"required" example:"Мисосов Мисос Мисосович"`
 }

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // CreateRecord godoc
@@ -20,17 +21,17 @@ import (
 //	@Security		Bearer
 //	@Success		200	{object}	models.RecordDto	"Created record"
 //	@Failure		400	{string}	string				"Bad request"
-//	@Failure		401	{string}	string				"Unauthorized"
 //	@Router			/record/create [post]
-func (api *ApiClient) CreateRecord(c *gin.Context) {
+func CreateRecord(c *gin.Context) {
 	var recordData models.RecordCreate
+	db := c.MustGet("db").(*gorm.DB)
 
 	if err := c.ShouldBindJSON(&recordData); err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	record, err := service.CreateRecord(api.db.Pool, c, recordData, c.GetString("x-user-email"))
+	record, err := service.CreateRecord(db, c, recordData, c.GetString("x-user-email"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -39,27 +40,28 @@ func (api *ApiClient) CreateRecord(c *gin.Context) {
 	c.JSON(http.StatusOK, record)
 }
 
-// GetRecordById godoc
+// GetRecordByID godoc
 //
 //	@Summary		Get record by id
 //	@Description	Get record by id
 //	@Tags			record
 //	@Accept			json
 //	@Produce		json
-//	@Param			record_id	path	int	true	"Record id"
+//	@Param			record_id	path	uint	true	"Record id"
 //	@Security		Bearer
 //	@Success		200	{object}	models.RecordDto	"Record"
 //	@Failure		400	{string}	string				"Bad request"
-//	@Failure		401	{string}	string				"Unauthorized"
 //	@Router			/record/{record_id} [get]
-func (api *ApiClient) GetRecordById(c *gin.Context) {
-	recordId, err := strconv.Atoi(c.Param("record_id"))
+func GetRecordByID(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	recordID, err := strconv.Atoi(c.Param("record_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	record, err := service.GetRecordById(api.db.Pool, c, recordId, c.GetString("x-user-email"))
+	record, err := service.GetRecordByID(db, c, recordID, c.GetString("x-user-email"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -78,14 +80,45 @@ func (api *ApiClient) GetRecordById(c *gin.Context) {
 //	@Security		Bearer
 //	@Success		200	{array}		models.RecordDto	"User's records"
 //	@Failure		400	{string}	string				"Bad request"
-//	@Failure		401	{string}	string				"Unauthorized"
 //	@Router			/record/all [get]
-func (api *ApiClient) GetRecordsByUser(c *gin.Context) {
-	records, err := service.GetRecordsByUser(api.db.Pool, c, c.GetString("x-user-email"))
+func GetRecordsByUser(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	records, err := service.GetRecordsByUser(db, c, c.GetString("x-user-email"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, records)
+}
+
+// PublishRecord godoc
+//
+//	@Summary		Publish record
+//	@Description	Publish record
+//	@Tags			record
+//	@Accept			json
+//	@Produce		json
+//	@Param			record_id	path	uint	true	"Record id"
+//	@Security		Bearer
+//	@Success		200	{object}	models.RecordDto
+//	@Failure		400	{string}	string	"Bad request"
+//	@Router			/record/{record_id}/publish [post]
+func PublishRecord(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	recordID, err := strconv.ParseUint(c.Param("record_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	record, err := service.PublishRecord(db, c, uint(recordID), c.GetString("x-user-email"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, record)
 }

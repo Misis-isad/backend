@@ -16,10 +16,10 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title			Profbuh API
-// @description	This is a sample server for Profbuh API.
+//	@title			Profbuh API
+//	@description	This is a sample server for Profbuh API.
 //
-// @host			localhost:8000
+//	@host			localhost:8000
 func main() {
 	err := config.LoadConfig()
 	if err != nil {
@@ -39,30 +39,31 @@ func main() {
 	if err != nil {
 		logging.Log.Fatalf("Can't init db: %v", err)
 	}
-	defer db.Pool.Close()
 
 	logging.Log.Debug("Db connected")
 
-	apiClient := api.NewApiClient(db)
-
 	gin.SetMode(config.Cfg.GinMode)
 	r := gin.Default()
+	r.Use(middlewares.DbSession(db))
 
 	router_auth := r.Group("/auth")
 	{
-		router_auth.POST("/user/create", apiClient.CreateUser)
-		router_auth.POST("/user/login", apiClient.LoginUser)
+		router_auth.POST("/user/create", api.CreateUser)
+		router_auth.POST("/user/login", api.LoginUser)
 	}
 
 	router_api := r.Group("/api/v1")
 	router_api.Use(middlewares.JwtAuth())
 	{
-		router_api.GET("/test", apiClient.TestMiddleware)
-		router_api.POST("/article/create", apiClient.CreateArticleWithRecordId)
-		router_api.GET("/article/:record_id", apiClient.GetArticleForRecord)
-		router_api.POST("/record/create", apiClient.CreateRecord)
-		router_api.GET("/record/:record_id", apiClient.GetRecordById)
-		router_api.GET("/record/all", apiClient.GetRecordsByUser)
+		router_api.GET("/test", api.TestMiddleware)
+
+		router_api.POST("/article/create", api.CreateArticleWithRecordID)
+		router_api.GET("/article/:record_id", api.GetArticleByRecordID)
+
+		router_api.POST("/record/create", api.CreateRecord)
+		router_api.GET("/record/:record_id", api.GetRecordByID)
+		router_api.GET("/record/all", api.GetRecordsByUser)
+		router_api.POST("/record/:record_id/publish", api.PublishRecord)
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

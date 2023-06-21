@@ -4,39 +4,35 @@ import (
 	"context"
 	"profbuh/internal/models"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
-func CreateArticleWithRecordId(db *pgxpool.Pool, c context.Context, articleData models.ArticleCreate, recordId int) (models.ArticleDto, error) {
+func CreateArticleWithRecordID(db *gorm.DB, c context.Context, articleData models.ArticleCreate, recordID uint) (models.ArticleDto, error) {
 	var article models.ArticleDto
 
-	res := db.QueryRow(c, `
-		INSERT INTO articles (body, record_id) VALUES ($1, $2) RETURNING id, body, record_id
-	`, articleData.Body, recordId)
-
-	err := res.Scan(&article.Id, &article.Body, &article.RecordId)
+	err := db.Model(&models.Article{}).Create(&models.Article{
+		RecordID: recordID,
+		Body:     articleData.Body,
+	}).Preload("Records").Scan(&article).Error
 	if err != nil {
 		return models.ArticleDto{}, err
 	}
 
-	return article, err
+	err = db.Model(&models.Record{}).Where("id = ?", recordID).Updates(models.Record{Status: models.CompletedRecordStatus}).Error
+	if err != nil {
+		return models.ArticleDto{}, err
+	}
+
+	return article, nil
 }
 
-func GetArticleForRecord(db *pgxpool.Pool, c context.Context, recordId int) (models.ArticleDto, error) {
-	var article models.ArticleDb
+func GetArticleForRecord(db *gorm.DB, c context.Context, recordID uint) (models.ArticleDto, error) {
+	var article models.ArticleDto
 
-	res := db.QueryRow(c, `
-		SELECT id, body, record_id, created_at FROM articles WHERE record_id = $1
-	`, recordId)
-
-	err := res.Scan(&article.Id, &article.Body, &article.RecordId, &article.CreatedAt)
+	err := db.Model(&models.Article{}).Where("record_id = ?", recordID).First(&article).Error
 	if err != nil {
 		return models.ArticleDto{}, err
 	}
 
-	return models.ArticleDto{
-		Id:       article.Id,
-		Body:     article.Body,
-		RecordId: article.RecordId,
-	}, nil
+	return article, nil
 }
