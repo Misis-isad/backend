@@ -1,13 +1,12 @@
 package crud
 
 import (
-	"context"
 	"profbuh/internal/models"
 
 	"gorm.io/gorm"
 )
 
-func CreateRecord(db *gorm.DB, c context.Context, recordData models.RecordCreate, userDb models.User) (models.RecordDto, error) {
+func CreateRecord(db *gorm.DB, recordData models.RecordCreate, userDb models.User) (models.RecordDto, error) {
 	var record models.RecordDto
 	err := db.Model(&models.Record{}).Create(&models.Record{
 		UserID:    userDb.ID,
@@ -22,7 +21,7 @@ func CreateRecord(db *gorm.DB, c context.Context, recordData models.RecordCreate
 	return record, nil
 }
 
-func GetRecordByID(db *gorm.DB, c context.Context, recordID int) (models.RecordDto, error) {
+func GetRecordByID(db *gorm.DB, recordID int) (models.RecordDto, error) {
 	var record models.RecordDto
 	err := db.Model(&models.Record{}).Where("id = ?", recordID).First(&record).Error
 
@@ -33,7 +32,7 @@ func GetRecordByID(db *gorm.DB, c context.Context, recordID int) (models.RecordD
 	return record, nil
 }
 
-func GetRecordsByUser(db *gorm.DB, c context.Context, userDb models.User) ([]models.RecordDto, error) {
+func GetRecordsForUser(db *gorm.DB, userDb models.User) ([]models.RecordDto, error) {
 	var records []models.RecordDto
 
 	err := db.Model(&models.Record{}).Where("user_id = ?", userDb.ID).Find(&records).Error
@@ -44,7 +43,7 @@ func GetRecordsByUser(db *gorm.DB, c context.Context, userDb models.User) ([]mod
 	return records, nil
 }
 
-func PublishRecord(db *gorm.DB, c context.Context, recordID uint, userDb models.User) (models.RecordDto, error) {
+func PublishRecord(db *gorm.DB, recordID uint, userDb models.User) (models.RecordDto, error) {
 	var record models.RecordDto
 
 	err := db.Model(&models.Record{}).Where("id = ?", recordID).Where("user_id = ?", userDb.ID).Updates(models.Record{

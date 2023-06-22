@@ -17,15 +17,13 @@ type UserLogin struct {
 	Password string `json:"password" binding:"required" example:"test"`
 }
 
-// UserDb model info
-//
-//	@Description	User db model
 type User struct {
 	ID       uint   `gorm:"primaryKey"`
 	Email    string `gorm:"unique; index"`
 	Password string
 	Fio      string
 	Records  []Record
+	Comments []Comment
 }
 
 // UserDto model info

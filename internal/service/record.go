@@ -9,12 +9,12 @@ import (
 )
 
 func CreateRecord(db *gorm.DB, c context.Context, recordData models.RecordCreate, email string) (models.RecordDto, error) {
-	userDb, err := crud.GetUserByEmail(db, c, email)
+	userDb, err := crud.GetUserByEmail(db, email)
 	if err != nil {
 		return models.RecordDto{}, err
 	}
 
-	record, err := crud.CreateRecord(db, c, recordData, userDb)
+	record, err := crud.CreateRecord(db, recordData, userDb)
 	if err != nil {
 		return models.RecordDto{}, err
 	}
@@ -23,7 +23,7 @@ func CreateRecord(db *gorm.DB, c context.Context, recordData models.RecordCreate
 }
 
 func GetRecordByID(db *gorm.DB, c context.Context, recordID int, email string) (models.RecordDto, error) {
-	record, err := crud.GetRecordByID(db, c, recordID)
+	record, err := crud.GetRecordByID(db, recordID)
 	if err != nil {
 		return models.RecordDto{}, err
 	}
@@ -31,13 +31,13 @@ func GetRecordByID(db *gorm.DB, c context.Context, recordID int, email string) (
 	return record, nil
 }
 
-func GetRecordsByUser(db *gorm.DB, c context.Context, email string) ([]models.RecordDto, error) {
-	userDb, err := crud.GetUserByEmail(db, c, email)
+func GetRecordsForUser(db *gorm.DB, c context.Context, email string) ([]models.RecordDto, error) {
+	userDb, err := crud.GetUserByEmail(db, email)
 	if err != nil {
 		return []models.RecordDto{}, err
 	}
 
-	records, err := crud.GetRecordsByUser(db, c, userDb)
+	records, err := crud.GetRecordsForUser(db, userDb)
 	if err != nil {
 		return []models.RecordDto{}, err
 	}
@@ -46,12 +46,12 @@ func GetRecordsByUser(db *gorm.DB, c context.Context, email string) ([]models.Re
 }
 
 func PublishRecord(db *gorm.DB, c context.Context, recordID uint, email string) (models.RecordDto, error) {
-	user, err := crud.GetUserByEmail(db, c, email)
+	user, err := crud.GetUserByEmail(db, email)
 	if err != nil {
 		return models.RecordDto{}, err
 	}
 
-	record, err := crud.PublishRecord(db, c, recordID, user)
+	record, err := crud.PublishRecord(db, recordID, user)
 	if err != nil {
 		return models.RecordDto{}, err
 	}

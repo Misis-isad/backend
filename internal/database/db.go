@@ -22,7 +22,7 @@ func InitDb(cfg *config.Config) (*Database, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&models.User{}, &models.Record{}, &models.Article{})
+	db.AutoMigrate(&models.User{}, &models.Record{}, &models.Article{}, &models.Comment{})
 
 	return &Database{Db: db}, nil
 }

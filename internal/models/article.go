@@ -7,9 +7,6 @@ type ArticleCreate struct {
 	Body string `json:"body" binding:"required" example:"{html page}" format:"html"`
 }
 
-// ArticleDb model info
-//
-//	@Description	Article db model
 type Article struct {
 	ID       uint `gorm:"primaryKey"`
 	Body     string

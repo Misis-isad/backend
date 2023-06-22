@@ -16,10 +16,10 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//	@title			Profbuh API
-//	@description	This is a sample server for Profbuh API.
+// @title			Profbuh API
+// @description	This is a sample server for Profbuh API.
 //
-//	@host			localhost:8000
+// @host			localhost:8000
 func main() {
 	err := config.LoadConfig()
 	if err != nil {
@@ -57,13 +57,26 @@ func main() {
 	{
 		router_api.GET("/test", api.TestMiddleware)
 
-		router_api.POST("/article/create", api.CreateArticleWithRecordID)
-		router_api.GET("/article/:record_id", api.GetArticleByRecordID)
+		record_router := router_api.Group("/record")
+		{
+			record_router.POST("/create", api.CreateRecord)
+			record_router.GET("/:record_id", api.GetRecordByID)
+			record_router.GET("/all", api.GetRecordsForUser)
+			record_router.POST("/:record_id/publish", api.PublishRecord)
+		}
 
-		router_api.POST("/record/create", api.CreateRecord)
-		router_api.GET("/record/:record_id", api.GetRecordByID)
-		router_api.GET("/record/all", api.GetRecordsByUser)
-		router_api.POST("/record/:record_id/publish", api.PublishRecord)
+		article_router := router_api.Group("/article")
+		{
+			article_router.POST("/create", api.CreateArticleWithRecordID)
+			article_router.GET("/:record_id", api.GetArticleByRecordID)
+		}
+
+		comment_router := router_api.Group("/comment")
+		{
+			comment_router.POST("/create", api.CreateCommentWithRecordID)
+			comment_router.GET("/:record_id", api.GetCommentsForRecord)
+			comment_router.GET("/author/:user_id", api.GetCommentsForUser)
+		}
 	}
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

@@ -16,7 +16,7 @@ func CreateUser(db *gorm.DB, c context.Context, userData models.UserCreate) (mod
 		return models.UserDto{}, err
 	}
 
-	user, err := crud.CreateUser(db, c, userData)
+	user, err := crud.CreateUser(db, userData)
 	if err != nil {
 		return models.UserDto{}, err
 	}

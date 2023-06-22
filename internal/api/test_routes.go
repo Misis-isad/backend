@@ -23,7 +23,7 @@ import (
 func TestMiddleware(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 
-	userDb, err := crud.GetUserByEmail(db, c.Request.Context(), c.GetString("x-user-email"))
+	userDb, err := crud.GetUserByEmail(db, c.GetString("x-user-email"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return

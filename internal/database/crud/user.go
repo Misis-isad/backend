@@ -1,13 +1,12 @@
 package crud
 
 import (
-	"context"
 	"profbuh/internal/models"
 
 	"gorm.io/gorm"
 )
 
-func CreateUser(db *gorm.DB, c context.Context, userData models.UserCreate) (models.UserDto, error) {
+func CreateUser(db *gorm.DB, userData models.UserCreate) (models.UserDto, error) {
 	var user models.UserDto
 	err := db.Model(&models.User{}).Create(&models.User{
 		Email:    userData.Email,
@@ -22,7 +21,7 @@ func CreateUser(db *gorm.DB, c context.Context, userData models.UserCreate) (mod
 	return user, nil
 }
 
-func GetUserByEmail(db *gorm.DB, c context.Context, email string) (models.User, error) {
+func GetUserByEmail(db *gorm.DB, email string) (models.User, error) {
 	var user models.User
 	err := db.Model(&models.User{}).Where("email = ?", email).First(&user).Error
 

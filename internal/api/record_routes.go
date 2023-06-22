@@ -81,10 +81,10 @@ func GetRecordByID(c *gin.Context) {
 //	@Success		200	{array}		models.RecordDto	"User's records"
 //	@Failure		400	{string}	string				"Bad request"
 //	@Router			/record/all [get]
-func GetRecordsByUser(c *gin.Context) {
+func GetRecordsForUser(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 
-	records, err := service.GetRecordsByUser(db, c, c.GetString("x-user-email"))
+	records, err := service.GetRecordsForUser(db, c, c.GetString("x-user-email"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return

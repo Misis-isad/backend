@@ -16,14 +16,16 @@ type RecordCreate struct {
 	VideoLink string `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=4O3UGW-Bbbw" format:"url"`
 }
 
+// TODO: videolink should be unique?`gorm:"unique"`
 type Record struct {
-	ID        uint   `gorm:"primaryKey"`
-	Title     string `gorm:"unique"`
+	ID        uint `gorm:"primaryKey"`
+	Title     string
 	VideoLink string
 	Status    RecordStatus `gorm:"default:'processing'"`
 	Hidden    bool         `gorm:"default:true"`
 	UserID    uint
 	Article   Article
+	Comments  []Comment
 }
 
 // RecordDto model info

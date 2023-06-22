@@ -52,7 +52,7 @@ func VerifyPassword(password, hashedPassword string) error {
 }
 
 func AuthenticateUser(db *gorm.DB, c context.Context, userData models.UserLogin) (string, error) {
-	userDb, err := crud.GetUserByEmail(db, c, userData.Email)
+	userDb, err := crud.GetUserByEmail(db, userData.Email)
 	if err != nil {
 		return "", err
 	}

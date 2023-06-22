@@ -9,15 +9,12 @@ type CommentCreate struct {
 	Comment string `json:"comment" binding:"required" example:"sample comment"`
 }
 
-// CommentDb model info
-//
-//	@Description	Comment db model
-type CommentDb struct {
-	ID        int
+type Comment struct {
+	ID        int `gorm:"primaryKey"`
 	Comment   string
+	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP()"`
 	RecordID  int
-	AuthorID  int
-	CreatedAt time.Time
+	UserID    int
 }
 
 // CommentDto model info

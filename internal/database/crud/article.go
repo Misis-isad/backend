@@ -1,13 +1,12 @@
 package crud
 
 import (
-	"context"
 	"profbuh/internal/models"
 
 	"gorm.io/gorm"
 )
 
-func CreateArticleWithRecordID(db *gorm.DB, c context.Context, articleData models.ArticleCreate, recordID uint) (models.ArticleDto, error) {
+func CreateArticleWithRecordID(db *gorm.DB, articleData models.ArticleCreate, recordID uint) (models.ArticleDto, error) {
 	var article models.ArticleDto
 
 	err := db.Model(&models.Article{}).Create(&models.Article{
@@ -26,7 +25,7 @@ func CreateArticleWithRecordID(db *gorm.DB, c context.Context, articleData model
 	return article, nil
 }
 
-func GetArticleForRecord(db *gorm.DB, c context.Context, recordID uint) (models.ArticleDto, error) {
+func GetArticleForRecord(db *gorm.DB, recordID uint) (models.ArticleDto, error) {
 	var article models.ArticleDto
 
 	err := db.Model(&models.Article{}).Where("record_id = ?", recordID).First(&article).Error
