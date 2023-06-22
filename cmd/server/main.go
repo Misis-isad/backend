@@ -11,6 +11,7 @@ import (
 
 	_ "profbuh/docs"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -45,6 +46,12 @@ func main() {
 	gin.SetMode(config.Cfg.GinMode)
 	r := gin.Default()
 	r.Use(middlewares.DbSession(db))
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*"},
+		AllowCredentials: true,
+	}))
 
 	router_auth := r.Group("/auth")
 	{
