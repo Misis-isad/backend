@@ -27,6 +27,7 @@ func (r *Record) ToDto() RecordDto {
 		VideoLink:      r.VideoLink,
 		Published:      r.Published,
 		PreviewPicture: r.PreviewPicture,
+		RecordSettings: r.RecordSettings,
 	}
 }
 
