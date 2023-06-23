@@ -22,8 +22,8 @@ type User struct {
 	Email    string `gorm:"unique; index"`
 	Password string
 	Fio      string
-	Records  []Record
-	Comments []Comment
+	Records  []Record  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Comments []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 // UserDto model info

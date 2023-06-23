@@ -22,7 +22,11 @@ func InitDb(cfg *config.Config) (*Database, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&models.User{}, &models.Record{}, &models.Article{}, &models.Comment{})
+	err = db.AutoMigrate(&models.User{}, &models.Record{}, &models.Article{}, &models.Comment{})
+	if err != nil {
+		logging.Log.Fatalf("Error migrating database: %v", err)
+		return nil, err
+	}
 
 	return &Database{Db: db}, nil
 }

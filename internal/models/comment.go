@@ -12,7 +12,7 @@ type CommentCreate struct {
 type Comment struct {
 	ID        int `gorm:"primaryKey"`
 	Comment   string
-	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP()"`
+	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 	RecordID  int
 	UserID    int
 }

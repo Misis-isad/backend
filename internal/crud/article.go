@@ -7,27 +7,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate, userDb models.User) (models.ArticleDto, error) {
+func CreateArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {
 	db := c.MustGet("db").(*gorm.DB)
-
-	var recordDb models.Record
-	err := db.Model(&models.Record{}).Where("id = ?", articleData.RecordID).Where("user_id = ?", userDb.ID).First(&recordDb).Error
-	if err != nil {
-		return models.ArticleDto{}, err
-	}
 
 	articleDb := models.Article{
 		Body:     articleData.Body,
-		RecordID: recordDb.ID,
+		RecordID: articleData.RecordID,
 	}
-	err = db.Model(&models.Article{}).Create(&articleDb).Error
-	if err != nil {
-		return models.ArticleDto{}, err
-	}
-
-	recordDb.Status = models.PublishedRecordStatus
-	recordDb.Hidden = false
-	err = db.Save(&recordDb).Error
+	err := db.Model(&models.Article{}).Create(&articleDb).Error
 	if err != nil {
 		return models.ArticleDto{}, err
 	}

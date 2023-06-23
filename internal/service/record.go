@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"profbuh/internal/database/crud"
+	"profbuh/internal/crud"
 	"profbuh/internal/logging"
 	"profbuh/internal/models"
 
@@ -19,6 +19,12 @@ func CreateRecord(c *gin.Context, recordData models.RecordCreate, email string) 
 	record, err := crud.CreateRecord(c, recordData, userDb)
 	if err != nil {
 		logging.Log.Errorf("CreateRecord, can't add Record to db: %v", err)
+		return models.RecordDto{}, err
+	}
+
+	_, err = CreateArticleWithRecordID(c, record)
+	if err != nil {
+		logging.Log.Errorf("CreateArticleWithRecordID, can't create Article: %v", err)
 		return models.RecordDto{}, err
 	}
 
@@ -40,17 +46,11 @@ func GetRecordByID(c *gin.Context, recordID uint, email string) (models.RecordDt
 		return models.RecordDto{}, err
 	}
 
-	if recordDb.UserID != userDb.ID && recordDb.Hidden {
-		return models.RecordDto{}, errors.New("hidden record")
+	if recordDb.UserID != userDb.ID && !recordDb.Published {
+		return models.RecordDto{}, errors.New("unpublished record")
 	}
 
-	return models.RecordDto{
-		ID:        recordDb.ID,
-		Title:     recordDb.Title,
-		VideoLink: recordDb.VideoLink,
-		Status:    recordDb.Status,
-		Hidden:    recordDb.Hidden,
-	}, nil
+	return recordDb.ToDto(), nil
 }
 
 func GetRecordsForUser(c *gin.Context, email string, limit int, offset int) ([]models.RecordDto, error) {
@@ -69,18 +69,44 @@ func GetRecordsForUser(c *gin.Context, email string, limit int, offset int) ([]m
 	return records, nil
 }
 
-func PublishRecord(c *gin.Context, recordID uint, email string) (models.RecordDto, error) {
-	user, err := crud.GetUserByEmail(c, email)
+func SetPublishedStatus(c *gin.Context, recordID uint, email string, published bool) (models.RecordDto, error) {
+	userDb, err := crud.GetUserByEmail(c, email)
 	if err != nil {
 		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
 		return models.RecordDto{}, err
 	}
 
-	record, err := crud.PublishRecord(c, recordID, user)
+	record, err := crud.SetPublishedStatus(c, recordID, userDb, published)
 	if err != nil {
-		logging.Log.Errorf("PublishRecord, can't publish Record: %v", err)
+		logging.Log.Errorf("SetPublishedStatus, can't publish Record: %v", err)
 		return models.RecordDto{}, err
 	}
 
 	return record, nil
+}
+
+func GetPublishedRecords(c *gin.Context, limit int, offset int) ([]models.RecordDto, error) {
+	records, err := crud.GetPublishedRecords(c, limit, offset)
+	if err != nil {
+		logging.Log.Errorf("GetPublishedRecords, can't find Records: %v", err)
+		return []models.RecordDto{}, err
+	}
+
+	return records, nil
+}
+
+func DeleteRecord(c *gin.Context, recordID uint, email string) error {
+	userDb, err := crud.GetUserByEmail(c, email)
+	if err != nil {
+		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
+		return err
+	}
+
+	err = crud.DeleteRecord(c, recordID, userDb)
+	if err != nil {
+		logging.Log.Errorf("DeleteRecord, can't delete Record: %v", err)
+		return err
+	}
+
+	return nil
 }

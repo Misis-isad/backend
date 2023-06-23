@@ -42,5 +42,8 @@ func main() {
 	r := router.NewRouter(db)
 	logging.Log.Info("Set up router")
 
-	r.Run(":" + config.Cfg.ServerPort)
+	err = r.Run(":" + config.Cfg.ServerPort)
+	if err != nil {
+		logging.Log.Fatalf("Can't start server: %v", err)
+	}
 }

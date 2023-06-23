@@ -20,13 +20,7 @@ func CreateRecord(c *gin.Context, recordData models.RecordCreate, userDb models.
 		return models.RecordDto{}, err
 	}
 
-	return models.RecordDto{
-		ID:        recordDb.ID,
-		Title:     recordDb.Title,
-		VideoLink: recordDb.VideoLink,
-		Status:    recordDb.Status,
-		Hidden:    recordDb.Hidden,
-	}, nil
+	return recordDb.ToDto(), nil
 }
 
 func GetRecordByID(c *gin.Context, recordID uint) (models.Record, error) {
@@ -53,7 +47,7 @@ func GetRecordsForUser(c *gin.Context, userDb models.User, limit int, offset int
 	return records, nil
 }
 
-func PublishRecord(c *gin.Context, recordID uint, userDb models.User) (models.RecordDto, error) {
+func SetPublishedStatus(c *gin.Context, recordID uint, userDb models.User, published bool) (models.RecordDto, error) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	var recordDb models.Record
@@ -62,18 +56,40 @@ func PublishRecord(c *gin.Context, recordID uint, userDb models.User) (models.Re
 		return models.RecordDto{}, err
 	}
 
-	recordDb.Status = models.PublishedRecordStatus
-	recordDb.Hidden = false
+	recordDb.Published = published
 	err = db.Save(&recordDb).Error
 	if err != nil {
 		return models.RecordDto{}, err
 	}
 
-	return models.RecordDto{
-		ID:        recordDb.ID,
-		Title:     recordDb.Title,
-		VideoLink: recordDb.VideoLink,
-		Status:    recordDb.Status,
-		Hidden:    recordDb.Hidden,
-	}, nil
+	return recordDb.ToDto(), nil
+}
+
+func GetPublishedRecords(c *gin.Context, limit int, offset int) ([]models.RecordDto, error) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	var records []models.RecordDto
+	err := db.Model(&models.Record{}).Where("published = ?", true).Limit(limit).Offset(offset).Find(&records).Error
+	if err != nil {
+		return []models.RecordDto{}, err
+	}
+
+	return records, nil
+}
+
+func DeleteRecord(c *gin.Context, recordID uint, userDb models.User) error {
+	db := c.MustGet("db").(*gorm.DB)
+
+	var recordDb models.Record
+	err := db.Model(&models.Record{}).Where("id = ?", recordID).Where("user_id = ?", userDb.ID).First(&recordDb).Error
+	if err != nil {
+		return err
+	}
+
+	err = db.Delete(&recordDb).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -16,57 +16,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/article/create": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create article",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "article"
-                ],
-                "summary": "Create article",
-                "parameters": [
-                    {
-                        "description": "Article create info",
-                        "name": "article",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ArticleCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.ArticleDto"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable entity",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/article/{record_id}": {
             "get": {
                 "security": [
@@ -214,6 +163,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/record/published": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all published records(not articles)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "Get published records",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Records",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.RecordDto"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/record/{record_id}": {
             "get": {
                 "security": [
@@ -261,16 +269,14 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/v1/record/{record_id}/publish": {
-            "post": {
+            },
+            "delete": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "Publish record",
+                "description": "Delete record",
                 "consumes": [
                     "application/json"
                 ],
@@ -280,13 +286,69 @@ const docTemplate = `{
                 "tags": [
                     "record"
                 ],
-                "summary": "Publish record",
+                "summary": "Delete record",
                 "parameters": [
                     {
                         "type": "integer",
                         "description": "Record id",
                         "name": "record_id",
                         "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Record not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/record/{record_id}/published_status": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Set published status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "record"
+                ],
+                "summary": "Set published status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Published status",
+                        "name": "published",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -406,30 +468,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.ArticleCreate": {
-            "description": "Article create model",
-            "type": "object",
-            "required": [
-                "body",
-                "record_id"
-            ],
-            "properties": {
-                "body": {
-                    "type": "string",
-                    "format": "html",
-                    "example": "{html page}"
-                },
-                "record_id": {
-                    "type": "integer",
-                    "example": 1
-                }
-            }
-        },
         "models.ArticleDto": {
             "description": "Article dto model",
             "type": "object",
             "required": [
                 "body",
+                "created_at",
                 "id"
             ],
             "properties": {
@@ -437,6 +481,10 @@ const docTemplate = `{
                     "type": "string",
                     "format": "html",
                     "example": "{html page}"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2021-01-01T00:00:00Z"
                 },
                 "id": {
                     "type": "integer",
@@ -467,28 +515,19 @@ const docTemplate = `{
             "description": "Record dto model",
             "type": "object",
             "required": [
-                "hidden",
                 "id",
-                "status",
+                "published",
                 "title",
                 "video_link"
             ],
             "properties": {
-                "hidden": {
-                    "type": "boolean",
-                    "example": true
-                },
                 "id": {
                     "type": "integer",
                     "example": 1
                 },
-                "status": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.RecordStatus"
-                        }
-                    ],
-                    "example": "В обработке"
+                "published": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "title": {
                     "type": "string",
@@ -500,19 +539,6 @@ const docTemplate = `{
                     "example": "https://www.youtube.com/watch?v=4O3UGW-Bbbw"
                 }
             }
-        },
-        "models.RecordStatus": {
-            "type": "string",
-            "enum": [
-                "processin",
-                "completed",
-                "published"
-            ],
-            "x-enum-varnames": [
-                "ProcessingRecordStatus",
-                "CompletedRecordStatus",
-                "PublishedRecordStatus"
-            ]
         },
         "models.TokenResponse": {
             "description": "Token response model",

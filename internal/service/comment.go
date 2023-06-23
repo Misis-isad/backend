@@ -1,7 +1,7 @@
 package service
 
 import (
-	"profbuh/internal/database/crud"
+	"profbuh/internal/crud"
 	"profbuh/internal/models"
 
 	"gorm.io/gorm"

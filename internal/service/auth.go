@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"profbuh/internal/config"
-	"profbuh/internal/database/crud"
+	"profbuh/internal/crud"
 	"profbuh/internal/logging"
 	"profbuh/internal/models"
 	"time"

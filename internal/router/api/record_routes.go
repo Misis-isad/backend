@@ -17,7 +17,9 @@ func InitRecordRoutes(r *gin.Engine) {
 		router.POST("/create", CreateRecord)
 		router.GET("/:record_id", GetRecordByID)
 		router.GET("/all", GetRecordsForUser)
-		router.POST("/:record_id/publish", PublishRecord)
+		router.POST("/:record_id/published_status", SetPublishedStatus)
+		router.GET("/published", GetPublishedRecords)
+		router.DELETE("/:record_id", DeleteRecord)
 	}
 }
 
@@ -119,31 +121,102 @@ func GetRecordsForUser(c *gin.Context) {
 	c.JSON(http.StatusOK, records)
 }
 
-// PublishRecord godoc
+// SetPublishedStatus godoc
 //
-//	@Summary		Publish record
-//	@Description	Publish record
+//	@Summary		Set published status
+//	@Description	Set published status
 //	@Tags			record
 //	@Accept			json
 //	@Produce		json
 //	@Param			record_id	path	uint	true	"Record id"
+//	@Param			published	query	bool	true	"Published status"
 //	@Security		Bearer
 //	@Success		200	{object}	models.RecordDto
 //	@Failure		404	{string}	string	"Record not found"
 //	@Failure		422	{string}	string	"Unprocessable entity"
-//	@Router			/api/v1/record/{record_id}/publish [post]
-func PublishRecord(c *gin.Context) {
+//	@Router			/api/v1/record/{record_id}/published_status [post]
+func SetPublishedStatus(c *gin.Context) {
+	published, err := strconv.ParseBool(c.Query("published"))
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
 	recordID, err := strconv.ParseUint(c.Param("record_id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 
-	record, err := service.PublishRecord(c, uint(recordID), c.GetString("x-user-email"))
+	record, err := service.SetPublishedStatus(c, uint(recordID), c.GetString("x-user-email"), published)
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, record)
+}
+
+// GetPublishedRecords godoc
+//
+//	@Summary		Get published records
+//	@Description	Get all published records(not articles)
+//	@Tags			record
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query	int	false	"Limit"		validation:"gte=0,lte=100"	default(10)
+//	@Param			offset	query	int	false	"Offset"	validation:"gte=0"			default(0)
+//	@Security		Bearer
+//	@Success		200	{array}		models.RecordDto	"Records"
+//	@Failure		400	{string}	string				"Bad request"
+//	@Failure		422	{string}	string				"Unprocessable entity"
+//	@Router			/api/v1/record/published [get]
+func GetPublishedRecords(c *gin.Context) {
+	limit, err := strconv.ParseInt(c.Query("limit"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+	offset, err := strconv.ParseInt(c.Query("offset"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	records, err := service.GetPublishedRecords(c, int(limit), int(offset))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, records)
+}
+
+// DeleteRecord godoc
+//
+//	@Summary		Delete record
+//	@Description	Delete record
+//	@Tags			record
+//	@Accept			json
+//	@Produce		json
+//	@Param			record_id	path	uint	true	"Record id"
+//	@Security		Bearer
+//	@Success		204	{string}	string
+//	@Failure		404	{string}	string	"Record not found"
+//	@Failure		422	{string}	string	"Unprocessable entity"
+//	@Router			/api/v1/record/{record_id} [delete]
+func DeleteRecord(c *gin.Context) {
+	recordID, err := strconv.ParseUint(c.Param("record_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	err = service.DeleteRecord(c, uint(recordID), c.GetString("x-user-email"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

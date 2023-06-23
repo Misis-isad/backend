@@ -1,18 +1,4 @@
 definitions:
-  models.ArticleCreate:
-    description: Article create model
-    properties:
-      body:
-        example: '{html page}'
-        format: html
-        type: string
-      record_id:
-        example: 1
-        type: integer
-    required:
-    - body
-    - record_id
-    type: object
   models.ArticleDto:
     description: Article dto model
     properties:
@@ -20,11 +6,15 @@ definitions:
         example: '{html page}'
         format: html
         type: string
+      created_at:
+        example: "2021-01-01T00:00:00Z"
+        type: string
       id:
         example: 1
         type: integer
     required:
     - body
+    - created_at
     - id
     type: object
   models.RecordCreate:
@@ -44,16 +34,12 @@ definitions:
   models.RecordDto:
     description: Record dto model
     properties:
-      hidden:
-        example: true
-        type: boolean
       id:
         example: 1
         type: integer
-      status:
-        allOf:
-        - $ref: '#/definitions/models.RecordStatus'
-        example: В обработке
+      published:
+        example: false
+        type: boolean
       title:
         example: title
         type: string
@@ -62,22 +48,11 @@ definitions:
         format: url
         type: string
     required:
-    - hidden
     - id
-    - status
+    - published
     - title
     - video_link
     type: object
-  models.RecordStatus:
-    enum:
-    - processin
-    - completed
-    - published
-    type: string
-    x-enum-varnames:
-    - ProcessingRecordStatus
-    - CompletedRecordStatus
-    - PublishedRecordStatus
   models.TokenResponse:
     description: Token response model
     properties:
@@ -156,27 +131,26 @@ paths:
       summary: Get article
       tags:
       - article
-  /api/v1/article/create:
-    post:
+  /api/v1/record/{record_id}:
+    delete:
       consumes:
       - application/json
-      description: Create article
+      description: Delete record
       parameters:
-      - description: Article create info
-        in: body
-        name: article
+      - description: Record id
+        in: path
+        name: record_id
         required: true
-        schema:
-          $ref: '#/definitions/models.ArticleCreate'
+        type: integer
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
           schema:
-            $ref: '#/definitions/models.ArticleDto'
-        "400":
-          description: Bad request
+            type: string
+        "404":
+          description: Record not found
           schema:
             type: string
         "422":
@@ -185,10 +159,9 @@ paths:
             type: string
       security:
       - Bearer: []
-      summary: Create article
+      summary: Delete record
       tags:
-      - article
-  /api/v1/record/{record_id}:
+      - record
     get:
       consumes:
       - application/json
@@ -219,17 +192,22 @@ paths:
       summary: Get record by id
       tags:
       - record
-  /api/v1/record/{record_id}/publish:
+  /api/v1/record/{record_id}/published_status:
     post:
       consumes:
       - application/json
-      description: Publish record
+      description: Set published status
       parameters:
       - description: Record id
         in: path
         name: record_id
         required: true
         type: integer
+      - description: Published status
+        in: query
+        name: published
+        required: true
+        type: boolean
       produces:
       - application/json
       responses:
@@ -247,7 +225,7 @@ paths:
             type: string
       security:
       - Bearer: []
-      summary: Publish record
+      summary: Set published status
       tags:
       - record
   /api/v1/record/all:
@@ -314,6 +292,44 @@ paths:
       security:
       - Bearer: []
       summary: Create record
+      tags:
+      - record
+  /api/v1/record/published:
+    get:
+      consumes:
+      - application/json
+      description: Get all published records(not articles)
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Records
+          schema:
+            items:
+              $ref: '#/definitions/models.RecordDto'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get published records
       tags:
       - record
   /auth/user/create:
