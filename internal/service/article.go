@@ -4,21 +4,21 @@ import (
 	"profbuh/internal/crud"
 	"profbuh/internal/logging"
 	"profbuh/internal/models"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CreateArticleWithRecordID(c *gin.Context, record models.RecordDto) (models.ArticleDto, error) {
-	body, err := GenerateArticle(c, record.VideoLink)
+func CreateArticleWithRecordID(c *gin.Context, record *models.RecordDto) (models.ArticleDto, error) {
+	mlResponse, err := GenerateArticle(c, record.VideoLink)
 	if err != nil {
 		logging.Log.Errorf("GenerateArticle, can't get Article body from ML: %v", err)
+		return models.ArticleDto{}, err
 	}
 
-	article, err := crud.CreateArticleWithRecordID(c, models.ArticleCreate{
-		Body:     body,
-		RecordID: record.ID,
-	})
+	record.Title = mlResponse.Title
+	record.PreviewPicture = mlResponse.PreviewPicture
+
+	article, err := crud.CreateArticleWithRecordID(c, record.ID, mlResponse)
 	if err != nil {
 		logging.Log.Errorf("CreateArticleWithRecordID, can't add Article to db: %v", err)
 		return models.ArticleDto{}, err
@@ -41,12 +41,4 @@ func GetArticleForRecord(c *gin.Context, recordID uint) (models.ArticleDto, erro
 	}
 
 	return article, nil
-}
-
-func GenerateArticle(c *gin.Context, videoLink string) (string, error) {
-	// запрос к МЛ для получения статьи
-
-	time.Sleep(3 * time.Second)
-
-	return "article body", nil
 }

@@ -496,13 +496,12 @@ const docTemplate = `{
             "description": "Record create model",
             "type": "object",
             "required": [
-                "title",
+                "settings",
                 "video_link"
             ],
             "properties": {
-                "title": {
-                    "type": "string",
-                    "example": "title"
+                "settings": {
+                    "$ref": "#/definitions/models.RecordSettings"
                 },
                 "video_link": {
                     "type": "string",
@@ -516,6 +515,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "id",
+                "preview_picture",
                 "published",
                 "title",
                 "video_link"
@@ -524,6 +524,11 @@ const docTemplate = `{
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "preview_picture": {
+                    "type": "string",
+                    "format": "url",
+                    "example": "picture url"
                 },
                 "published": {
                     "type": "boolean",
@@ -537,6 +542,38 @@ const docTemplate = `{
                     "type": "string",
                     "format": "url",
                     "example": "https://www.youtube.com/watch?v=4O3UGW-Bbbw"
+                }
+            }
+        },
+        "models.RecordSettings": {
+            "type": "object",
+            "required": [
+                "annotation_length",
+                "article_length",
+                "end_timecode",
+                "screenshot_timing",
+                "start_timecode"
+            ],
+            "properties": {
+                "annotation_length": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "article_length": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "end_timecode": {
+                    "type": "string",
+                    "example": "00:10:00"
+                },
+                "screenshot_timing": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "start_timecode": {
+                    "type": "string",
+                    "example": "00:00:00"
                 }
             }
         },

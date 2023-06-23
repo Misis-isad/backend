@@ -15,6 +15,7 @@ type Article struct {
 	Body      string
 	RecordID  uint
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	// MediaLinks []Media   `gorm:"many2many:article_medias; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 // ArticleDto model info

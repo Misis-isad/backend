@@ -20,15 +20,14 @@ definitions:
   models.RecordCreate:
     description: Record create model
     properties:
-      title:
-        example: title
-        type: string
+      settings:
+        $ref: '#/definitions/models.RecordSettings'
       video_link:
         example: https://www.youtube.com/watch?v=4O3UGW-Bbbw
         format: url
         type: string
     required:
-    - title
+    - settings
     - video_link
     type: object
   models.RecordDto:
@@ -37,6 +36,10 @@ definitions:
       id:
         example: 1
         type: integer
+      preview_picture:
+        example: picture url
+        format: url
+        type: string
       published:
         example: false
         type: boolean
@@ -49,9 +52,34 @@ definitions:
         type: string
     required:
     - id
+    - preview_picture
     - published
     - title
     - video_link
+    type: object
+  models.RecordSettings:
+    properties:
+      annotation_length:
+        example: 200
+        type: integer
+      article_length:
+        example: 1000
+        type: integer
+      end_timecode:
+        example: "00:10:00"
+        type: string
+      screenshot_timing:
+        example: 3
+        type: integer
+      start_timecode:
+        example: "00:00:00"
+        type: string
+    required:
+    - annotation_length
+    - article_length
+    - end_timecode
+    - screenshot_timing
+    - start_timecode
     type: object
   models.TokenResponse:
     description: Token response model

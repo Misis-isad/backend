@@ -11,11 +11,22 @@ func CreateRecord(c *gin.Context, recordData models.RecordCreate, userDb models.
 	db := c.MustGet("db").(*gorm.DB)
 
 	recordDb := models.Record{
-		Title:     recordData.Title,
 		VideoLink: recordData.VideoLink,
 		UserID:    userDb.ID,
+		RecordSettings: &models.RecordSettings{
+			StartTimecode:    recordData.Settings.StartTimecode,
+			EndTimecode:      recordData.Settings.EndTimecode,
+			AnnotationLength: recordData.Settings.AnnotationLength,
+			ArticleLength:    recordData.Settings.ArticleLength,
+			ScreenshotTiming: recordData.Settings.ScreenshotTiming,
+		},
 	}
 	err := db.Model(&models.Record{}).Create(&recordDb).Error
+	if err != nil {
+		return models.RecordDto{}, err
+	}
+
+	err = db.Model(&userDb).Association("Records").Append(&recordDb)
 	if err != nil {
 		return models.RecordDto{}, err
 	}
