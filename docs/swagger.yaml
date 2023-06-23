@@ -33,6 +33,15 @@ definitions:
   models.RecordDto:
     description: Record dto model
     properties:
+      annotation_length:
+        example: 200
+        type: integer
+      article_length:
+        example: 1000
+        type: integer
+      end_timecode:
+        example: "00:10:00"
+        type: string
       id:
         example: 1
         type: integer
@@ -43,6 +52,12 @@ definitions:
       published:
         example: false
         type: boolean
+      screenshot_timing:
+        example: 3
+        type: integer
+      start_timecode:
+        example: "00:00:00"
+        type: string
       title:
         example: title
         type: string
@@ -74,12 +89,6 @@ definitions:
       start_timecode:
         example: "00:00:00"
         type: string
-    required:
-    - annotation_length
-    - article_length
-    - end_timecode
-    - screenshot_timing
-    - start_timecode
     type: object
   models.TokenResponse:
     description: Token response model

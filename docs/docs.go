@@ -521,6 +521,18 @@ const docTemplate = `{
                 "video_link"
             ],
             "properties": {
+                "annotation_length": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "article_length": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "end_timecode": {
+                    "type": "string",
+                    "example": "00:10:00"
+                },
                 "id": {
                     "type": "integer",
                     "example": 1
@@ -533,6 +545,14 @@ const docTemplate = `{
                 "published": {
                     "type": "boolean",
                     "example": false
+                },
+                "screenshot_timing": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "start_timecode": {
+                    "type": "string",
+                    "example": "00:00:00"
                 },
                 "title": {
                     "type": "string",
@@ -547,13 +567,6 @@ const docTemplate = `{
         },
         "models.RecordSettings": {
             "type": "object",
-            "required": [
-                "annotation_length",
-                "article_length",
-                "end_timecode",
-                "screenshot_timing",
-                "start_timecode"
-            ],
             "properties": {
                 "annotation_length": {
                     "type": "integer",
