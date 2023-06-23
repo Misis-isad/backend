@@ -39,4 +39,5 @@ type RecordDto struct {
 	VideoLink      string `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=4O3UGW-Bbbw" format:"url"`
 	Published      bool   `json:"published" binding:"required" example:"false"`
 	PreviewPicture string `json:"preview_picture" binding:"required" example:"picture url" format:"url"`
+	*RecordSettings
 }
