@@ -10,7 +10,8 @@ import (
 
 func DbSession(db *database.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		timeoutContext, _ := context.WithTimeout(c.Request.Context(), 5*time.Second)
+		timeoutContext, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+		defer cancel()
 		c.Set("db", db.Db.WithContext(timeoutContext))
 		c.Next()
 	}

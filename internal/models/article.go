@@ -4,7 +4,8 @@ package models
 //
 //	@Description	Article create model
 type ArticleCreate struct {
-	Body string `json:"body" binding:"required" example:"{html page}" format:"html"`
+	Body     string `json:"body" binding:"required" example:"{html page}" format:"html"`
+	RecordID uint   `json:"record_id" binding:"required" example:"1"`
 }
 
 type Article struct {

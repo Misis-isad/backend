@@ -1,14 +1,4 @@
 definitions:
-  models.Article:
-    description: Article db model
-    properties:
-      body:
-        type: string
-      id:
-        type: integer
-      recordID:
-        type: integer
-    type: object
   models.ArticleCreate:
     description: Article create model
     properties:
@@ -16,8 +6,12 @@ definitions:
         example: '{html page}'
         format: html
         type: string
+      record_id:
+        example: 1
+        type: integer
     required:
     - body
+    - record_id
     type: object
   models.ArticleDto:
     description: Article dto model
@@ -32,23 +26,6 @@ definitions:
     required:
     - body
     - id
-    type: object
-  models.Record:
-    properties:
-      article:
-        $ref: '#/definitions/models.Article'
-      hidden:
-        type: boolean
-      id:
-        type: integer
-      status:
-        $ref: '#/definitions/models.RecordStatus'
-      title:
-        type: string
-      userID:
-        type: integer
-      videoLink:
-        type: string
     type: object
   models.RecordCreate:
     description: Record create model
@@ -114,22 +91,6 @@ definitions:
     - token
     - token_type
     type: object
-  models.User:
-    description: User db model
-    properties:
-      email:
-        type: string
-      fio:
-        type: string
-      id:
-        type: integer
-      password:
-        type: string
-      records:
-        items:
-          $ref: '#/definitions/models.Record'
-        type: array
-    type: object
   models.UserCreate:
     description: User create model
     properties:
@@ -168,28 +129,7 @@ info:
   description: This is a sample server for Profbuh API.
   title: Profbuh API
 paths:
-  /api/v1/test:
-    get:
-      consumes:
-      - application/json
-      description: Test middleware
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Current user
-          schema:
-            $ref: '#/definitions/models.User'
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Test middleware
-      tags:
-      - test
-  /article/{record_id}:
+  /api/v1/article/{record_id}:
     get:
       consumes:
       - application/json
@@ -207,8 +147,8 @@ paths:
           description: Article
           schema:
             $ref: '#/definitions/models.ArticleDto'
-        "400":
-          description: Bad request
+        "404":
+          description: Article not found
           schema:
             type: string
       security:
@@ -216,17 +156,12 @@ paths:
       summary: Get article
       tags:
       - article
-  /article/create:
+  /api/v1/article/create:
     post:
       consumes:
       - application/json
       description: Create article
       parameters:
-      - description: Record id
-        in: query
-        name: record_id
-        required: true
-        type: integer
       - description: Article create info
         in: body
         name: article
@@ -244,11 +179,143 @@ paths:
           description: Bad request
           schema:
             type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
       security:
       - Bearer: []
       summary: Create article
       tags:
       - article
+  /api/v1/record/{record_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get record by id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "403":
+          description: Hidden record
+          schema:
+            type: string
+        "404":
+          description: Record not found
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get record by id
+      tags:
+      - record
+  /api/v1/record/{record_id}/publish:
+    post:
+      consumes:
+      - application/json
+      description: Publish record
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "404":
+          description: Record not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Publish record
+      tags:
+      - record
+  /api/v1/record/all:
+    get:
+      consumes:
+      - application/json
+      description: Get all records(not articles) for current user
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Records
+          schema:
+            items:
+              $ref: '#/definitions/models.RecordDto'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get records by user
+      tags:
+      - record
+  /api/v1/record/create:
+    post:
+      consumes:
+      - application/json
+      description: Create record
+      parameters:
+      - description: Record create info
+        in: body
+        name: record
+        required: true
+        schema:
+          $ref: '#/definitions/models.RecordCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Create record
+      tags:
+      - record
   /auth/user/create:
     post:
       consumes:
@@ -270,6 +337,10 @@ paths:
             $ref: '#/definitions/models.TokenResponse'
         "400":
           description: Bad request
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
           schema:
             type: string
       summary: Create user
@@ -298,112 +369,11 @@ paths:
           description: Unauthorized
           schema:
             type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
       summary: Login user
       tags:
       - user
-  /record/{record_id}:
-    get:
-      consumes:
-      - application/json
-      description: Get record by id
-      parameters:
-      - description: Record id
-        in: path
-        name: record_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Record
-          schema:
-            $ref: '#/definitions/models.RecordDto'
-        "400":
-          description: Bad request
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Get record by id
-      tags:
-      - record
-  /record/{record_id}/publish:
-    post:
-      consumes:
-      - application/json
-      description: Publish record
-      parameters:
-      - description: Record id
-        in: path
-        name: record_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.RecordDto'
-        "400":
-          description: Bad request
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Publish record
-      tags:
-      - record
-  /record/all:
-    get:
-      consumes:
-      - application/json
-      description: Get all records(not articles) for current user
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User's records
-          schema:
-            items:
-              $ref: '#/definitions/models.RecordDto'
-            type: array
-        "400":
-          description: Bad request
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Get records by user
-      tags:
-      - record
-  /record/create:
-    post:
-      consumes:
-      - application/json
-      description: Create record
-      parameters:
-      - description: Record create info
-        in: body
-        name: record
-        required: true
-        schema:
-          $ref: '#/definitions/models.RecordCreate'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Created record
-          schema:
-            $ref: '#/definitions/models.RecordDto'
-        "400":
-          description: Bad request
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Create record
-      tags:
-      - record
 swagger: "2.0"

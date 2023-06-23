@@ -30,5 +30,4 @@ func JwtAuth() gin.HandlerFunc {
 			c.Abort()
 		}
 	}
-	// https://warped-satellite-991708.postman.co/workspace/LMS-misis~1ba8d311-d07d-4916-87c7-5b623a4e4299/collection/24697187-64f06f35-3410-4689-9c0c-77e2cb31766f?action=share&creator=24697187
 }

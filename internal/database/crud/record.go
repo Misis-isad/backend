@@ -3,39 +3,49 @@ package crud
 import (
 	"profbuh/internal/models"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func CreateRecord(db *gorm.DB, recordData models.RecordCreate, userDb models.User) (models.RecordDto, error) {
-	var record models.RecordDto
-	err := db.Model(&models.Record{}).Create(&models.Record{
-		UserID:    userDb.ID,
+func CreateRecord(c *gin.Context, recordData models.RecordCreate, userDb models.User) (models.RecordDto, error) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	recordDb := models.Record{
 		Title:     recordData.Title,
 		VideoLink: recordData.VideoLink,
-	}).Scan(&record).Error
-
+		UserID:    userDb.ID,
+	}
+	err := db.Model(&models.Record{}).Create(&recordDb).Error
 	if err != nil {
 		return models.RecordDto{}, err
 	}
 
-	return record, nil
+	return models.RecordDto{
+		ID:        recordDb.ID,
+		Title:     recordDb.Title,
+		VideoLink: recordDb.VideoLink,
+		Status:    recordDb.Status,
+		Hidden:    recordDb.Hidden,
+	}, nil
 }
 
-func GetRecordByID(db *gorm.DB, recordID int) (models.RecordDto, error) {
-	var record models.RecordDto
-	err := db.Model(&models.Record{}).Where("id = ?", recordID).First(&record).Error
+func GetRecordByID(c *gin.Context, recordID uint) (models.Record, error) {
+	db := c.MustGet("db").(*gorm.DB)
 
+	var recordDb models.Record
+	err := db.Model(&models.Record{}).Where("id = ?", recordID).First(&recordDb).Error
 	if err != nil {
-		return models.RecordDto{}, err
+		return models.Record{}, err
 	}
 
-	return record, nil
+	return recordDb, nil
 }
 
-func GetRecordsForUser(db *gorm.DB, userDb models.User) ([]models.RecordDto, error) {
+func GetRecordsForUser(c *gin.Context, userDb models.User, limit int, offset int) ([]models.RecordDto, error) {
+	db := c.MustGet("db").(*gorm.DB)
+
 	var records []models.RecordDto
-
-	err := db.Model(&models.Record{}).Where("user_id = ?", userDb.ID).Find(&records).Error
+	err := db.Model(&models.Record{}).Where("user_id = ?", userDb.ID).Limit(limit).Offset(offset).Find(&records).Error
 	if err != nil {
 		return []models.RecordDto{}, err
 	}
@@ -43,16 +53,27 @@ func GetRecordsForUser(db *gorm.DB, userDb models.User) ([]models.RecordDto, err
 	return records, nil
 }
 
-func PublishRecord(db *gorm.DB, recordID uint, userDb models.User) (models.RecordDto, error) {
-	var record models.RecordDto
+func PublishRecord(c *gin.Context, recordID uint, userDb models.User) (models.RecordDto, error) {
+	db := c.MustGet("db").(*gorm.DB)
 
-	err := db.Model(&models.Record{}).Where("id = ?", recordID).Where("user_id = ?", userDb.ID).Updates(models.Record{
-		Status: models.PublishedRecordStatus,
-		Hidden: false,
-	}).Scan(&record).Error
+	var recordDb models.Record
+	err := db.Model(&models.Record{}).Where("id = ?", recordID).Where("user_id = ?", userDb.ID).First(&recordDb).Error
 	if err != nil {
 		return models.RecordDto{}, err
 	}
 
-	return record, nil
+	recordDb.Status = models.PublishedRecordStatus
+	recordDb.Hidden = false
+	err = db.Save(&recordDb).Error
+	if err != nil {
+		return models.RecordDto{}, err
+	}
+
+	return models.RecordDto{
+		ID:        recordDb.ID,
+		Title:     recordDb.Title,
+		VideoLink: recordDb.VideoLink,
+		Status:    recordDb.Status,
+		Hidden:    recordDb.Hidden,
+	}, nil
 }

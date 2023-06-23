@@ -2,12 +2,23 @@ package api
 
 import (
 	"net/http"
+	"profbuh/internal/middlewares"
 	"profbuh/internal/models"
 	"profbuh/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+func InitCommentRoutes(r *gin.Engine) {
+	router := r.Group("/api/v1/comment")
+	router.Use(middlewares.JwtAuth())
+	{
+		router.POST("/create", CreateCommentWithRecordID)
+		router.GET("/:record_id", GetCommentsForRecord)
+		router.GET("/author/:user_id", GetCommentsForUser)
+	}
+}
 
 func CreateCommentWithRecordID(c *gin.Context) {
 	var commentData models.CommentCreate
