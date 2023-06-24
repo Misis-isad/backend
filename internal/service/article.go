@@ -10,7 +10,7 @@ import (
 )
 
 func CreateArticleWithRecordID(c *gin.Context, record *models.RecordDto) (models.ArticleDto, error) {
-	mlResponse, err := GenerateArticle(c, record.VideoLink)
+	mlResponse, err := GenerateArticle(c, record)
 	if err != nil {
 		logging.Log.Errorf("GenerateArticle, can't get Article body from ML: %v", err)
 		return models.ArticleDto{}, err

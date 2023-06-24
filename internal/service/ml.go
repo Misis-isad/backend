@@ -1,25 +1,31 @@
 package service
 
 import (
+	"io"
+	"net/http"
 	"profbuh/internal/models"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GenerateArticle(c *gin.Context, videoLink string) (models.MlResponse, error) {
+func GenerateArticle(c *gin.Context, record *models.RecordDto) (models.MlResponse, error) {
 	// запрос к МЛ для получения статьи
 	// получаем body, title, previewPicture, urls
 
-	time.Sleep(3 * time.Second)
+	r, err := http.Get("http://larek.itatmisis.ru:10000/static/file/eac0a7ec83537763d3ba7671828d0989")
+	if err != nil {
+		return models.MlResponse{}, err
+	}
 
-	// urls := []string{"https://i.pinimg.com/736x/f4/d2/96/f4d2961b652880be432fb9580891ed62.jpg"}
+	articleBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		return models.MlResponse{}, err
+	}
 
 	mlResponse := models.MlResponse{
-		Body:           "article body " + time.Now().String(),
-		Title:          "record title " + time.Now().String(),
+		Body:           string(articleBody),
+		Title:          "record title",
 		PreviewPicture: "preview_url",
-		// MediaLinks:     urls,
 	}
 
 	return mlResponse, nil

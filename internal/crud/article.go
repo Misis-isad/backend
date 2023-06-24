@@ -28,6 +28,7 @@ func CreateArticleWithRecordID(c *gin.Context, recordID uint, mlResponse models.
 		return models.ArticleDto{}, err
 	}
 
+	// FIXME: не работает
 	// err = db.Model(&models.Record{}).Association("Articles").Append(&articleDb)
 	// if err != nil {
 	// 	return models.ArticleDto{}, err
@@ -94,6 +95,7 @@ func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.Art
 		return models.ArticleDto{}, err
 	}
 
+	// FIXME: не работает
 	// err = db.Model(&models.Record{}).Association("Articles").Append(&articleDb)
 	// if err != nil {
 	// 	return models.ArticleDto{}, err
