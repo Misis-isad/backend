@@ -11,17 +11,17 @@ var (
 //
 //	@Description	Record create model
 type RecordCreate struct {
-	VideoLink string         `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=4O3UGW-Bbbw" format:"url"`
+	VideoLink string         `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=rVUHUgEO6qE" format:"url"`
 	Settings  RecordSettings `json:"settings" binding:"required"`
 }
 
 type Record struct {
-	ID             uint `gorm:"primaryKey"`
+	ID             uint `gorm:"primaryKey" json:"id" binding:"required" example:"1"`
 	Title          string
-	VideoLink      string
-	Published      bool `gorm:"default:false"`
+	VideoLink      string `json:"video_link" binding:"required" example:"https://www.youtube.com/watch?v=rVUHUgEO6qE" format:"url"`
+	Published      bool   `gorm:"default:false" json:"published" binding:"required" example:"false"`
 	PreviewPicture string
-	Status         RecordStatus `gorm:"default:'processing'"`
+	Status         RecordStatus `gorm:"default:'processing'" json:"status" binding:"required" example:"processing"`
 	*RecordSettings
 	UserID   uint
 	Articles []Article `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`

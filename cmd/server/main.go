@@ -13,10 +13,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//	@title			Profbuh API
-//	@description	This is a sample server for Profbuh API.
+// @title			Profbuh API
+// @description	This is a sample server for Profbuh API.
 //
-//	@host			localhost:8000
+// @host			localhost:8000
 func main() {
 	err := config.LoadConfig()
 	if err != nil {
@@ -42,7 +42,7 @@ func main() {
 	r := router.NewRouter(db)
 	logging.Log.Info("Set up router")
 
-	err = r.Run(":" + config.Cfg.ServerPort)
+	err = r.R.Run(":" + config.Cfg.ServerPort)
 	if err != nil {
 		logging.Log.Fatalf("Can't start server: %v", err)
 	}

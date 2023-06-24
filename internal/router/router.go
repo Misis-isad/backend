@@ -2,7 +2,6 @@ package router
 
 import (
 	"profbuh/internal/database"
-	"profbuh/internal/middlewares"
 	"profbuh/internal/router/api"
 	"profbuh/internal/router/auth"
 
@@ -13,33 +12,32 @@ import (
 )
 
 type Router struct {
-	*gin.Engine
+	R  *gin.Engine
 	Db *database.Database
 }
 
 func NewRouter(db *database.Database) *Router {
 	router := &Router{
-		Engine: gin.Default(),
-		Db:     db,
+		R:  gin.Default(),
+		Db: db,
 	}
 
 	router.InitRoutes()
 	return router
 }
 
-func (r *Router) InitRoutes() {
-	r.Use(middlewares.DbSession(r.Db))
-	r.Use(cors.New(cors.Config{
+func (router *Router) InitRoutes() {
+	router.R.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"*"},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 	}))
 
-	auth.InitUserRoutes(r.Engine)
-	api.InitRecordRoutes(r.Engine)
-	api.InitArticleRoutes(r.Engine)
-	api.InitCommentRoutes(r.Engine)
+	auth.InitUserRoutes(router.R, router.Db)
+	api.InitRecordRoutes(router.R, router.Db)
+	api.InitArticleRoutes(router.R, router.Db)
+	api.InitCommentRoutes(router.R, router.Db)
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.R.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

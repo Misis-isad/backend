@@ -40,9 +40,10 @@ func CreateArticleWithRecordID(c *gin.Context, recordDb models.Record, mlRespons
 	}
 
 	return models.ArticleDto{
-		ID:     articleDb.ID,
-		Body:   articleDb.Body,
-		IsMain: articleDb.IsMain,
+		ID:        articleDb.ID,
+		Body:      articleDb.Body,
+		CreatedAt: articleDb.CreatedAt,
+		IsMain:    articleDb.IsMain,
 	}, nil
 }
 

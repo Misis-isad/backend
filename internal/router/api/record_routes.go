@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"profbuh/internal/database"
 	"profbuh/internal/middlewares"
 	"profbuh/internal/models"
 	"profbuh/internal/service"
@@ -10,9 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRecordRoutes(r *gin.Engine) {
+func InitRecordRoutes(r *gin.Engine, db *database.Database) {
 	router := r.Group("/api/v1/record")
 	router.Use(middlewares.JwtAuth())
+	router.Use(middlewares.DbSession(db, 5))
 	{
 		router.POST("/create", CreateRecord)
 		router.GET("/:record_id", GetRecordByID)

@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"profbuh/internal/database"
 	"profbuh/internal/middlewares"
 	"profbuh/internal/models"
 	"profbuh/internal/service"
@@ -10,16 +11,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitArticleRoutes(r *gin.Engine) {
+func InitArticleRoutes(r *gin.Engine, db *database.Database) {
 	router := r.Group("/api/v1/article")
 	router.Use(middlewares.JwtAuth())
+	router.Use(middlewares.DbSession(db, 5))
 	{
-		router.POST("/:record_id", CreateArticleWithRecordID)
 		router.GET("/:record_id/main", GetMainArticleByRecordID)
 		router.GET("/:record_id/all", GetArticlesForRecord)
 		router.POST("/:record_id/is_main", SetIsMainArticle)
 		// router.POST("/alternative", CreateAlternativeArticleWithRecordID)
 	}
+
+	router_ml := r.Group("/api/v1/article")
+	router_ml.Use(middlewares.JwtAuth())
+	router.Use(middlewares.DbSession(db, 60000))
+	router_ml.POST("/:record_id", CreateArticleWithRecordID)
 }
 
 // CreateArticleWithRecordID godoc

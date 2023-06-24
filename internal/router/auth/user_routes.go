@@ -2,14 +2,17 @@ package auth
 
 import (
 	"net/http"
+	"profbuh/internal/database"
+	"profbuh/internal/middlewares"
 	"profbuh/internal/models"
 	"profbuh/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InitUserRoutes(r *gin.Engine) {
+func InitUserRoutes(r *gin.Engine, db *database.Database) {
 	router := r.Group("/auth")
+	router.Use(middlewares.DbSession(db, 5))
 	{
 		router.POST("/user/create", CreateUser)
 		router.POST("/user/login", LoginUser)

@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"profbuh/internal/database"
 	"profbuh/internal/middlewares"
 	"profbuh/internal/models"
 	"profbuh/internal/service"
@@ -10,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitCommentRoutes(r *gin.Engine) {
+func InitCommentRoutes(r *gin.Engine, db *database.Database) {
 	router := r.Group("/api/v1/comment")
 	router.Use(middlewares.JwtAuth())
 	{
