@@ -69,20 +69,20 @@ func GetRecordsForUser(c *gin.Context, email string, limit int, offset int) ([]m
 	return records, nil
 }
 
-func SetPublishedStatus(c *gin.Context, recordID uint, email string, published bool) (models.RecordDto, error) {
+func SetPublishedStatus(c *gin.Context, recordID uint, email string, published bool) error {
 	userDb, err := crud.GetUserByEmail(c, email)
 	if err != nil {
 		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
-		return models.RecordDto{}, err
+		return err
 	}
 
-	record, err := crud.SetPublishedStatus(c, recordID, userDb, published)
+	err = crud.SetPublishedStatus(c, recordID, userDb, published)
 	if err != nil {
 		logging.Log.Errorf("SetPublishedStatus, can't publish Record: %v", err)
-		return models.RecordDto{}, err
+		return err
 	}
 
-	return record, nil
+	return nil
 }
 
 func GetPublishedRecords(c *gin.Context, limit int, offset int) ([]models.RecordDto, error) {

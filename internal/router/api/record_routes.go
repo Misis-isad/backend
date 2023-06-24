@@ -65,6 +65,7 @@ func CreateRecord(c *gin.Context) {
 //	@Success		200	{object}	models.RecordDto	"Record"
 //	@Failure		403	{string}	string				"Hidden record"
 //	@Failure		404	{string}	string				"Record not found"
+//	@Failure		422	{string}	string				"Unprocessable entity"
 //	@Router			/api/v1/record/{record_id} [get]
 func GetRecordByID(c *gin.Context) {
 	recordID, err := strconv.ParseUint(c.Param("record_id"), 10, 32)
@@ -99,6 +100,7 @@ func GetRecordByID(c *gin.Context) {
 //	@Security		Bearer
 //	@Success		200	{array}		models.RecordDto	"Records"
 //	@Failure		400	{string}	string				"Bad request"
+//	@Failure		422	{string}	string				"Unprocessable entity"
 //	@Router			/api/v1/record/all [get]
 func GetRecordsForUser(c *gin.Context) {
 	limit, err := strconv.ParseInt(c.Query("limit"), 10, 32)
@@ -131,7 +133,7 @@ func GetRecordsForUser(c *gin.Context) {
 //	@Param			record_id	path	uint	true	"Record id"
 //	@Param			published	query	bool	true	"Published status"
 //	@Security		Bearer
-//	@Success		200	{object}	models.RecordDto
+//	@Success		204	{object}	string	"Record published"
 //	@Failure		404	{string}	string	"Record not found"
 //	@Failure		422	{string}	string	"Unprocessable entity"
 //	@Router			/api/v1/record/{record_id}/published_status [post]
@@ -148,13 +150,13 @@ func SetPublishedStatus(c *gin.Context) {
 		return
 	}
 
-	record, err := service.SetPublishedStatus(c, uint(recordID), c.GetString("x-user-email"), published)
+	err = service.SetPublishedStatus(c, uint(recordID), c.GetString("x-user-email"), published)
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, record)
+	c.JSON(http.StatusNoContent, "Record published")
 }
 
 // GetPublishedRecords godoc

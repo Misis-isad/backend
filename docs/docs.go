@@ -16,14 +16,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/article/{record_id}": {
-            "get": {
+        "/api/v1/article/alternative": {
+            "post": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "Get article for record by record_id",
+                "description": "Create alternative article for record by record_id",
                 "consumes": [
                     "application/json"
                 ],
@@ -33,7 +33,196 @@ const docTemplate = `{
                 "tags": [
                     "article"
                 ],
-                "summary": "Get article",
+                "summary": "Create alternative article",
+                "parameters": [
+                    {
+                        "description": "Article info for create",
+                        "name": "article",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Article created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/article/{record_id}/all": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get articles for record by record_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "Get articles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ArticleDto"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Articles not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/article/{record_id}/is_main": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Set is_main for article by record_id and article_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "Set is_main",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Article id",
+                        "name": "article_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Article set as main",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/article/{record_id}/main": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get main article for record by record_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "Get main article",
                 "parameters": [
                     {
                         "type": "integer",
@@ -52,6 +241,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Article not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
                         "schema": {
                             "type": "string"
                         }
@@ -105,6 +300,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
                         "schema": {
                             "type": "string"
                         }
@@ -267,6 +468,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -353,10 +560,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "Record published",
                         "schema": {
-                            "$ref": "#/definitions/models.RecordDto"
+                            "type": "string"
                         }
                     },
                     "404": {
@@ -468,13 +675,33 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.ArticleCreate": {
+            "description": "Article create model",
+            "type": "object",
+            "required": [
+                "body",
+                "record_id"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "format": "html",
+                    "example": "{html page}"
+                },
+                "record_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
         "models.ArticleDto": {
             "description": "Article dto model",
             "type": "object",
             "required": [
                 "body",
                 "created_at",
-                "id"
+                "id",
+                "is_main"
             ],
             "properties": {
                 "body": {
@@ -489,6 +716,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "is_main": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },

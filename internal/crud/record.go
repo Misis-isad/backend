@@ -58,22 +58,23 @@ func GetRecordsForUser(c *gin.Context, userDb models.User, limit int, offset int
 	return records, nil
 }
 
-func SetPublishedStatus(c *gin.Context, recordID uint, userDb models.User, published bool) (models.RecordDto, error) {
+func SetPublishedStatus(c *gin.Context, recordID uint, userDb models.User, published bool) error {
 	db := c.MustGet("db").(*gorm.DB)
 
 	var recordDb models.Record
 	err := db.Model(&models.Record{}).Where("id = ?", recordID).Where("user_id = ?", userDb.ID).First(&recordDb).Error
 	if err != nil {
-		return models.RecordDto{}, err
+		return err
 	}
 
-	recordDb.Published = published
-	err = db.Save(&recordDb).Error
+	err = db.Model(&recordDb).Updates(&models.Record{
+		Published: published,
+	}).Error
 	if err != nil {
-		return models.RecordDto{}, err
+		return err
 	}
 
-	return recordDb.ToDto(), nil
+	return nil
 }
 
 func GetPublishedRecords(c *gin.Context, limit int, offset int) ([]models.RecordDto, error) {

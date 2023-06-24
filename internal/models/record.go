@@ -16,7 +16,7 @@ type Record struct {
 	PreviewPicture string
 	*RecordSettings
 	UserID   uint
-	Article  Article   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Articles []Article `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Comments []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
