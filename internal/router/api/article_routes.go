@@ -24,7 +24,7 @@ func InitArticleRoutes(r *gin.Engine, db *database.Database) {
 
 	router_ml := r.Group("/api/v1/article")
 	router_ml.Use(middlewares.JwtAuth())
-	router.Use(middlewares.DbSession(db, 60000))
+	router_ml.Use(middlewares.DbSession(db, 60000))
 	router_ml.POST("/:record_id", CreateArticleWithRecordID)
 }
 
