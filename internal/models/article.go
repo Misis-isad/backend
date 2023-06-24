@@ -6,8 +6,7 @@ import "time"
 //
 //	@Description	Article create model
 type ArticleCreate struct {
-	Body     string `json:"body" example:"{html page}" format:"html"`
-	RecordID uint   `json:"record_id" example:"1"`
+	Body string `json:"body" binding:"required" example:"{html page}" format:"html"`
 }
 
 type Article struct {

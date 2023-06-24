@@ -3,32 +3,29 @@ package service
 import (
 	"errors"
 	"profbuh/internal/crud"
+	"profbuh/internal/database"
 	"profbuh/internal/logging"
 	"profbuh/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CreateRecord(c *gin.Context, recordData models.RecordCreate, email string) (models.RecordDto, error) {
+func CreateRecord(c *gin.Context, recordData models.RecordCreate, email string, db *database.Database) (models.RecordDto, error) {
 	userDb, err := crud.GetUserByEmail(c, email)
 	if err != nil {
 		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
 		return models.RecordDto{}, err
 	}
 
-	record, err := crud.CreateRecord(c, recordData, userDb)
+	recordDb, err := crud.CreateRecord(c, recordData, userDb)
 	if err != nil {
 		logging.Log.Errorf("CreateRecord, can't add Record to db: %v", err)
 		return models.RecordDto{}, err
 	}
 
-	// _, err = CreateArticleWithRecordID(c, &record)
-	// if err != nil {
-	// 	logging.Log.Errorf("CreateArticleWithRecordID, can't create Article: %v", err)
-	// 	return models.RecordDto{}, err
-	// }
+	go BackgroundMlCreateArticle(recordDb, db)
 
-	return record, nil
+	return recordDb.ToDto(), nil
 }
 
 func GetRecordByID(c *gin.Context, recordID uint, email string) (models.RecordDto, error) {

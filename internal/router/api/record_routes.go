@@ -16,7 +16,7 @@ func InitRecordRoutes(r *gin.Engine, db *database.Database) {
 	router.Use(middlewares.JwtAuth())
 	router.Use(middlewares.DbSession(db, 5))
 	{
-		router.POST("/create", CreateRecord)
+		router.POST("/create", CreateRecord(db))
 		router.GET("/:record_id", GetRecordByID)
 		router.GET("/all", GetRecordsForUser)
 		router.POST("/:record_id/published_status", SetPublishedStatus)
@@ -38,21 +38,23 @@ func InitRecordRoutes(r *gin.Engine, db *database.Database) {
 //	@Failure		400	{string}	string				"Bad request"
 //	@Failure		422	{string}	string				"Unprocessable entity"
 //	@Router			/api/v1/record/create [post]
-func CreateRecord(c *gin.Context) {
-	var recordData models.RecordCreate
+func CreateRecord(db *database.Database) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var recordData models.RecordCreate
 
-	if err := c.ShouldBindJSON(&recordData); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, err.Error())
-		return
+		if err := c.ShouldBindJSON(&recordData); err != nil {
+			c.JSON(http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		record, err := service.CreateRecord(c, recordData, c.GetString("x-user-email"), db)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+
+		c.JSON(http.StatusOK, record)
 	}
-
-	record, err := service.CreateRecord(c, recordData, c.GetString("x-user-email"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, record)
 }
 
 // GetRecordByID godoc

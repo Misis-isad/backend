@@ -6,9 +6,8 @@ definitions:
         example: '{html page}'
         format: html
         type: string
-      record_id:
-        example: 1
-        type: integer
+    required:
+    - body
     type: object
   models.ArticleDto:
     description: Article dto model
@@ -38,7 +37,7 @@ definitions:
       settings:
         $ref: '#/definitions/models.RecordSettings'
       video_link:
-        example: https://www.youtube.com/watch?v=4O3UGW-Bbbw
+        example: https://www.youtube.com/watch?v=rVUHUgEO6qE
         format: url
         type: string
     required:
@@ -55,7 +54,7 @@ definitions:
         example: 1000
         type: integer
       end_timecode:
-        example: "00:10:00"
+        example: ""
         type: string
       id:
         example: 1
@@ -71,7 +70,7 @@ definitions:
         example: 3
         type: integer
       start_timecode:
-        example: "00:00:00"
+        example: ""
         type: string
       status:
         example: processing
@@ -100,13 +99,13 @@ definitions:
         example: 1000
         type: integer
       end_timecode:
-        example: "00:10:00"
+        example: ""
         type: string
       screenshot_timing:
         example: 3
         type: integer
       start_timecode:
-        example: "00:00:00"
+        example: ""
         type: string
     type: object
   models.TokenResponse:
@@ -174,6 +173,7 @@ paths:
       - description: Article info for create
         in: body
         name: article
+        required: true
         schema:
           $ref: '#/definitions/models.ArticleCreate'
       produces:
@@ -318,6 +318,41 @@ paths:
       security:
       - Bearer: []
       summary: Get main article
+      tags:
+      - article
+  /api/v1/article/{record_id}/video_link:
+    get:
+      consumes:
+      - application/json
+      description: Get video link for article by record_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Video link
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get video link
       tags:
       - article
   /api/v1/record/{record_id}:

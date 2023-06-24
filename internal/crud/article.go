@@ -7,24 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateArticleWithRecordID(c *gin.Context, recordDb models.Record, mlResponse models.MlResponse) (models.ArticleDto, error) {
+func CreateArticleWithRecordID(c *gin.Context, recordDb models.Record, articleData models.ArticleCreate) (models.ArticleDto, error) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	articleDb := models.Article{
-		Body:     mlResponse.Body,
+		Body:     articleData.Body,
 		RecordID: recordDb.ID,
 		IsMain:   true,
 	}
 	err := db.Model(&models.Article{}).Create(&articleDb).Error
-	if err != nil {
-		return models.ArticleDto{}, err
-	}
-
-	err = db.Model(&recordDb).Updates(&models.Record{
-		Title:          mlResponse.Title,
-		PreviewPicture: mlResponse.PreviewPicture,
-		Status:         models.RecordStatusReady,
-	}).Error
 	if err != nil {
 		return models.ArticleDto{}, err
 	}
@@ -82,6 +73,32 @@ func SetIsMainArticle(c *gin.Context, recordID uint, articleID uint) error {
 	err = db.Model(&models.Article{}).Where("id = ?", articleID).Updates(&models.Article{
 		IsMain: true,
 	}).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func BackgroundMlCreateArticle(recordDb models.Record, mlResponse models.MlResponse, db *gorm.DB) error {
+	articleDb := models.Article{
+		Body:     mlResponse.Body,
+		RecordID: recordDb.ID,
+		IsMain:   true,
+	}
+	err := db.Model(&models.Article{}).Create(&articleDb).Error
+	if err != nil {
+		return err
+	}
+
+	err = db.Model(&recordDb).Updates(&models.Record{
+		Status: models.RecordStatusReady,
+	}).Error
+	if err != nil {
+		return err
+	}
+
+	err = db.Model(&recordDb).Association("Articles").Append(&articleDb)
 	if err != nil {
 		return err
 	}

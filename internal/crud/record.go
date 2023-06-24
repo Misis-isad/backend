@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateRecord(c *gin.Context, recordData models.RecordCreate, userDb models.User) (models.RecordDto, error) {
+func CreateRecord(c *gin.Context, recordData models.RecordCreate, userDb models.User) (models.Record, error) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	recordDb := models.Record{
@@ -23,15 +23,15 @@ func CreateRecord(c *gin.Context, recordData models.RecordCreate, userDb models.
 	}
 	err := db.Model(&models.Record{}).Create(&recordDb).Error
 	if err != nil {
-		return models.RecordDto{}, err
+		return models.Record{}, err
 	}
 
 	err = db.Model(&userDb).Association("Records").Append(&recordDb)
 	if err != nil {
-		return models.RecordDto{}, err
+		return models.Record{}, err
 	}
 
-	return recordDb.ToDto(), nil
+	return recordDb, nil
 }
 
 func GetRecordByID(c *gin.Context, recordID uint) (models.Record, error) {

@@ -46,6 +46,7 @@ const docTemplate = `{
                         "description": "Article info for create",
                         "name": "article",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/models.ArticleCreate"
                         }
@@ -243,6 +244,61 @@ const docTemplate = `{
                         "description": "Article",
                         "schema": {
                             "$ref": "#/definitions/models.ArticleDto"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/article/{record_id}/video_link": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get video link for article by record_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "Get video link",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Video link",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "403": {
@@ -690,15 +746,14 @@ const docTemplate = `{
         "models.ArticleCreate": {
             "description": "Article create model",
             "type": "object",
+            "required": [
+                "body"
+            ],
             "properties": {
                 "body": {
                     "type": "string",
                     "format": "html",
                     "example": "{html page}"
-                },
-                "record_id": {
-                    "type": "integer",
-                    "example": 1
                 }
             }
         },
@@ -745,7 +800,7 @@ const docTemplate = `{
                 "video_link": {
                     "type": "string",
                     "format": "url",
-                    "example": "https://www.youtube.com/watch?v=4O3UGW-Bbbw"
+                    "example": "https://www.youtube.com/watch?v=rVUHUgEO6qE"
                 }
             }
         },
@@ -771,7 +826,7 @@ const docTemplate = `{
                 },
                 "end_timecode": {
                     "type": "string",
-                    "example": "00:10:00"
+                    "example": ""
                 },
                 "id": {
                     "type": "integer",
@@ -792,7 +847,7 @@ const docTemplate = `{
                 },
                 "start_timecode": {
                     "type": "string",
-                    "example": "00:00:00"
+                    "example": ""
                 },
                 "status": {
                     "type": "string",
@@ -822,7 +877,7 @@ const docTemplate = `{
                 },
                 "end_timecode": {
                     "type": "string",
-                    "example": "00:10:00"
+                    "example": ""
                 },
                 "screenshot_timing": {
                     "type": "integer",
@@ -830,7 +885,7 @@ const docTemplate = `{
                 },
                 "start_timecode": {
                     "type": "string",
-                    "example": "00:00:00"
+                    "example": ""
                 }
             }
         },

@@ -13,10 +13,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @title			Profbuh API
-// @description	This is a sample server for Profbuh API.
+//	@title			Profbuh API
+//	@description	This is a sample server for Profbuh API.
 //
-// @host			localhost:8000
+//	@host			localhost:8000
 func main() {
 	err := config.LoadConfig()
 	if err != nil {

@@ -1,8 +1,10 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"profbuh/internal/crud"
+	"profbuh/internal/database"
 	"profbuh/internal/logging"
 	"profbuh/internal/models"
 
@@ -26,22 +28,7 @@ func CreateArticleWithRecordID(c *gin.Context, recordID uint, articleData models
 		return models.ArticleDto{}, errors.New("forbidden")
 	}
 
-	var mlResponse models.MlResponse
-	if articleData != (models.ArticleCreate{}) {
-		mlResponse = models.MlResponse{
-			Body:           articleData.Body,
-			Title:          recordDb.Title,
-			PreviewPicture: recordDb.PreviewPicture,
-		}
-	} else {
-		mlResponse, err = GenerateArticle(c, &recordDb)
-		if err != nil {
-			logging.Log.Errorf("GenerateArticle, can't get Article body from ML: %v", err)
-			return models.ArticleDto{}, err
-		}
-	}
-
-	article, err := crud.CreateArticleWithRecordID(c, recordDb, mlResponse)
+	article, err := crud.CreateArticleWithRecordID(c, recordDb, articleData)
 	if err != nil {
 		logging.Log.Errorf("CreateArticleWithRecordID, can't add Article to db: %v", err)
 		return models.ArticleDto{}, err
@@ -126,6 +113,48 @@ func SetIsMainArticle(c *gin.Context, recordID uint, articleID uint) error {
 	}
 
 	return nil
+}
+
+func BackgroundMlCreateArticle(recordDb models.Record, db *database.Database) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 60000)
+	defer cancel()
+
+	session := db.Db.WithContext(ctx)
+
+	mlResponse, err := GenerateArticle(ctx, session, recordDb)
+	if err != nil {
+		logging.Log.Errorf("GenerateArticle, can't get Article body from ML: %v", err)
+		return err
+	}
+
+	err = crud.BackgroundMlCreateArticle(recordDb, mlResponse, db.Db)
+	if err != nil {
+		logging.Log.Errorf("CreateArticleWithRecordID, can't add Article to db: %v", err)
+		return err
+	}
+
+	logging.Log.Debug("ML response success")
+	return nil
+}
+
+func GetVideoLinkForArticleByRecordID(c *gin.Context, recordID uint) (string, error) {
+	userDb, err := crud.GetUserByEmail(c, c.GetString("x-user-email"))
+	if err != nil {
+		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
+		return "", err
+	}
+
+	recordDb, err := crud.GetRecordByID(c, recordID)
+	if err != nil {
+		logging.Log.Errorf("GetRecordByID, can't find Record: %v", err)
+		return "", err
+	}
+
+	if recordDb.UserID != userDb.ID && !recordDb.Published {
+		return "", errors.New("forbidden")
+	}
+
+	return recordDb.VideoLink, nil
 }
 
 // func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {

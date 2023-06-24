@@ -1,38 +1,51 @@
 package service
 
 import (
+	"context"
 	"os"
 	"profbuh/internal/models"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func GenerateArticle(c *gin.Context, record *models.Record) (models.MlResponse, error) {
-	// запрос к МЛ для получения статьи
-	// получаем body, title, previewPicture, urls
-
-	/*
-		GenerateArticle() -> Python.post("/generate_article") с record.Videolink и record.Settings -> golang получаем html(article body), string(title), url(preview, валяется на larek:10000)
-	*/
-
-	// FIXME: починить запрос к МЛ
-	// r, err := http.Get("http://larek.itatmisis.ru:10000/static/file/eac0a7ec83537763d3ba7671828d0989")
+func GenerateArticle(ctx context.Context, db *gorm.DB, record models.Record) (models.MlResponse, error) {
+	// json, err := json.Marshal(record)
 	// if err != nil {
 	// 	return models.MlResponse{}, err
 	// }
 
-	// articleBody, err := io.ReadAll(r.Body)
+	// logging.Log.Debugf("Sending POST request with %v to larek", string(json))
+	// request, err := http.NewRequestWithContext(c, "POST", "http://larek.itatmisis.ru:10001/generate_article", bytes.NewBuffer(json))
 	// if err != nil {
 	// 	return models.MlResponse{}, err
 	// }
+	// request.Header.Set("Content-Type", "application/json")
 
-	time.Sleep(3 * time.Second)
+	// client := &http.Client{}
+	// resp, err := client.Do(request)
+	// if err != nil {
+	// 	return models.MlResponse{}, err
+	// }
+	// if resp.StatusCode != http.StatusOK {
+	// 	errDesc, _ := io.ReadAll(resp.Body)
+	// 	logging.Log.Debug(string(errDesc))
+	// 	return models.MlResponse{}, fmt.Errorf("%d", resp.StatusCode)
+	// }
+	// defer resp.Body.Close()
+
+	// data, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	return models.MlResponse{}, err
+	// }
+	// logging.Log.Debugf("Received: %v", string(data))
 
 	articleBody, err := os.ReadFile("test.html")
 	if err != nil {
 		return models.MlResponse{}, err
 	}
+
+	time.Sleep(25 * time.Second)
 
 	mlResponse := models.MlResponse{
 		Body:           string(articleBody),
