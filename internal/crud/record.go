@@ -62,14 +62,12 @@ func SetPublishedStatus(c *gin.Context, recordID uint, userDb models.User, publi
 	db := c.MustGet("db").(*gorm.DB)
 
 	var recordDb models.Record
-	err := db.Model(&models.Record{}).Where("id = ?", recordID).Where("user_id = ?", userDb.ID).First(&recordDb).Error
+	err := db.Model(&models.Record{}).Where("id = ?", recordID).Where("user_id = ?", userDb.ID).Where("status = ?", models.RecordStatusReady).First(&recordDb).Error
 	if err != nil {
 		return err
 	}
 
-	err = db.Model(&recordDb).Updates(&models.Record{
-		Published: published,
-	}).Error
+	err = db.Model(&recordDb).Update("published", published).Error
 	if err != nil {
 		return err
 	}

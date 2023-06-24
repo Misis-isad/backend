@@ -14,11 +14,46 @@ func InitArticleRoutes(r *gin.Engine) {
 	router := r.Group("/api/v1/article")
 	router.Use(middlewares.JwtAuth())
 	{
+		router.POST("/:record_id", CreateArticleWithRecordID)
 		router.GET("/:record_id/main", GetMainArticleByRecordID)
 		router.GET("/:record_id/all", GetArticlesForRecord)
 		router.POST("/:record_id/is_main", SetIsMainArticle)
-		router.POST("/alternative", CreateAlternativeArticleWithRecordID)
+		// router.POST("/alternative", CreateAlternativeArticleWithRecordID)
 	}
+}
+
+// CreateArticleWithRecordID godoc
+//
+//	@Summary		Create article
+//	@Description	Create article for record by record_id
+//	@Tags			article
+//	@Accept			json
+//	@Produce		json
+//	@Param			record_id	path	uint					true	"Record id"
+//	@Param			article		body	models.ArticleCreate	false	"Article info for create"
+//	@Security		Bearer
+//	@Success		200	{object}	models.ArticleDto	"Article created"
+//	@Failure		403	{object}	string				"Forbidden"
+//	@Failure		404	{object}	string				"Article not found"
+//	@Failure		422	{object}	string				"Unprocessable entity"
+//	@Router			/api/v1/article/{record_id}/generate [post]
+func CreateArticleWithRecordID(c *gin.Context) {
+	recordID, err := strconv.ParseUint(c.Param("record_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	var articleData models.ArticleCreate
+	_ = c.ShouldBindJSON(&articleData)
+
+	article, err := service.CreateArticleWithRecordID(c, uint(recordID), articleData)
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, article)
 }
 
 // GetMainArticleByRecordID godoc
@@ -31,6 +66,7 @@ func InitArticleRoutes(r *gin.Engine) {
 //	@Param			record_id	path	uint	true	"Record id"
 //	@Security		Bearer
 //	@Success		200	{object}	models.ArticleDto	"Article"
+//	@Failure		403	{object}	string				"Forbidden"
 //	@Failure		404	{object}	string				"Article not found"
 //	@Failure		422	{object}	string				"Unprocessable entity"
 //	@Router			/api/v1/article/{record_id}/main [get]
@@ -43,8 +79,13 @@ func GetMainArticleByRecordID(c *gin.Context) {
 
 	article, err := service.GetMainArticleForRecord(c, uint(recordID))
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
-		return
+		if err.Error() == "forbidden" {
+			c.JSON(http.StatusForbidden, err.Error())
+			return
+		} else {
+			c.JSON(http.StatusNotFound, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, article)
@@ -140,37 +181,37 @@ func SetIsMainArticle(c *gin.Context) {
 	c.JSON(http.StatusNoContent, "Article set as main")
 }
 
-// CreateAlternativeArticleWithRecordID godoc
-//
-//	@Summary		Create alternative article
-//	@Description	Create alternative article for record by record_id
-//	@Tags			article
-//	@Accept			json
-//	@Produce		json
-//	@Param			article	body	models.ArticleCreate	true	"Article info for create"
-//	@Security		Bearer
-//	@Success		200	{object}	string	"Article created"
-//	@Failure		403	{object}	string	"Forbidden"
-//	@Failure		404	{object}	string	"Article not found"
-//	@Failure		422	{object}	string	"Unprocessable entity"
-//	@Router			/api/v1/article/alternative [post]
-func CreateAlternativeArticleWithRecordID(c *gin.Context) {
-	var articleData models.ArticleCreate
-	if err := c.ShouldBindJSON(&articleData); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, err.Error())
-		return
-	}
+// // CreateAlternativeArticleWithRecordID godoc
+// //
+// //	@Summary		Create alternative article
+// //	@Description	Create alternative article for record by record_id
+// //	@Tags			article
+// //	@Accept			json
+// //	@Produce		json
+// //	@Param			article	body	models.ArticleCreate	true	"Article info for create"
+// //	@Security		Bearer
+// //	@Success		200	{object}	string	"Article created"
+// //	@Failure		403	{object}	string	"Forbidden"
+// //	@Failure		404	{object}	string	"Article not found"
+// //	@Failure		422	{object}	string	"Unprocessable entity"
+// //	@Router			/api/v1/article/alternative [post]
+// func CreateAlternativeArticleWithRecordID(c *gin.Context) {
+// 	var articleData models.ArticleCreate
+// 	if err := c.ShouldBindJSON(&articleData); err != nil {
+// 		c.JSON(http.StatusUnprocessableEntity, err.Error())
+// 		return
+// 	}
 
-	article, err := service.CreateAlternativeArticleWithRecordID(c, articleData)
-	if err != nil {
-		if err.Error() == "forbidden" {
-			c.JSON(http.StatusForbidden, err.Error())
-			return
-		} else {
-			c.JSON(http.StatusNotFound, err.Error())
-			return
-		}
-	}
+// 	article, err := service.CreateAlternativeArticleWithRecordID(c, articleData)
+// 	if err != nil {
+// 		if err.Error() == "forbidden" {
+// 			c.JSON(http.StatusForbidden, err.Error())
+// 			return
+// 		} else {
+// 			c.JSON(http.StatusNotFound, err.Error())
+// 			return
+// 		}
+// 	}
 
-	c.JSON(http.StatusOK, article)
-}
+// 	c.JSON(http.StatusOK, article)
+// }

@@ -9,17 +9,39 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateArticleWithRecordID(c *gin.Context, record *models.RecordDto) (models.ArticleDto, error) {
-	mlResponse, err := GenerateArticle(c, record)
+func CreateArticleWithRecordID(c *gin.Context, recordID uint, articleData models.ArticleCreate) (models.ArticleDto, error) {
+	userDb, err := crud.GetUserByEmail(c, c.GetString("x-user-email"))
 	if err != nil {
-		logging.Log.Errorf("GenerateArticle, can't get Article body from ML: %v", err)
+		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
 		return models.ArticleDto{}, err
 	}
 
-	record.Title = mlResponse.Title
-	record.PreviewPicture = mlResponse.PreviewPicture
+	recordDb, err := crud.GetRecordByID(c, recordID)
+	if err != nil {
+		logging.Log.Errorf("GetRecordByID, can't find Record: %v", err)
+		return models.ArticleDto{}, err
+	}
 
-	article, err := crud.CreateArticleWithRecordID(c, record.ID, mlResponse)
+	if recordDb.UserID != userDb.ID {
+		return models.ArticleDto{}, errors.New("forbidden")
+	}
+
+	var mlResponse models.MlResponse
+	if articleData != (models.ArticleCreate{}) {
+		mlResponse = models.MlResponse{
+			Body:           articleData.Body,
+			Title:          recordDb.Title,
+			PreviewPicture: recordDb.PreviewPicture,
+		}
+	} else {
+		mlResponse, err = GenerateArticle(c, &recordDb)
+		if err != nil {
+			logging.Log.Errorf("GenerateArticle, can't get Article body from ML: %v", err)
+			return models.ArticleDto{}, err
+		}
+	}
+
+	article, err := crud.CreateArticleWithRecordID(c, recordDb, mlResponse)
 	if err != nil {
 		logging.Log.Errorf("CreateArticleWithRecordID, can't add Article to db: %v", err)
 		return models.ArticleDto{}, err
@@ -42,7 +64,7 @@ func GetMainArticleForRecord(c *gin.Context, recordID uint) (models.ArticleDto, 
 	}
 
 	if recordDb.UserID != userDb.ID && !recordDb.Published {
-		return models.ArticleDto{}, err
+		return models.ArticleDto{}, errors.New("forbidden")
 	}
 
 	article, err := crud.GetMainArticleForRecord(c, recordDb)
@@ -106,28 +128,28 @@ func SetIsMainArticle(c *gin.Context, recordID uint, articleID uint) error {
 	return nil
 }
 
-func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {
-	userDb, err := crud.GetUserByEmail(c, c.GetString("x-user-email"))
-	if err != nil {
-		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
-		return models.ArticleDto{}, err
-	}
+// func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {
+// 	userDb, err := crud.GetUserByEmail(c, c.GetString("x-user-email"))
+// 	if err != nil {
+// 		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
+// 		return models.ArticleDto{}, err
+// 	}
 
-	recordDb, err := crud.GetRecordByID(c, articleData.RecordID)
-	if err != nil {
-		logging.Log.Errorf("GetRecordByID, can't find Record: %v", err)
-		return models.ArticleDto{}, err
-	}
+// 	recordDb, err := crud.GetRecordByID(c, articleData.RecordID)
+// 	if err != nil {
+// 		logging.Log.Errorf("GetRecordByID, can't find Record: %v", err)
+// 		return models.ArticleDto{}, err
+// 	}
 
-	if recordDb.UserID != userDb.ID {
-		return models.ArticleDto{}, errors.New("forbidden")
-	}
+// 	if recordDb.UserID != userDb.ID {
+// 		return models.ArticleDto{}, errors.New("forbidden")
+// 	}
 
-	article, err := crud.CreateAlternativeArticleWithRecordID(c, articleData)
-	if err != nil {
-		logging.Log.Errorf("CreateAlternativeArticleWithRecordID, can't create Article: %v", err)
-		return models.ArticleDto{}, err
-	}
+// 	article, err := crud.CreateAlternativeArticleWithRecordID(c, articleData)
+// 	if err != nil {
+// 		logging.Log.Errorf("CreateAlternativeArticleWithRecordID, can't create Article: %v", err)
+// 		return models.ArticleDto{}, err
+// 	}
 
-	return article, nil
-}
+// 	return article, nil
+// }

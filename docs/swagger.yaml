@@ -9,9 +9,6 @@ definitions:
       record_id:
         example: 1
         type: integer
-    required:
-    - body
-    - record_id
     type: object
   models.ArticleDto:
     description: Article dto model
@@ -76,6 +73,9 @@ definitions:
       start_timecode:
         example: "00:00:00"
         type: string
+      status:
+        example: processing
+        type: string
       title:
         example: title
         type: string
@@ -87,6 +87,7 @@ definitions:
     - id
     - preview_picture
     - published
+    - status
     - title
     - video_link
     type: object
@@ -204,6 +205,46 @@ paths:
       summary: Get articles
       tags:
       - article
+  /api/v1/article/{record_id}/generate:
+    post:
+      consumes:
+      - application/json
+      description: Create article for record by record_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      - description: Article info for create
+        in: body
+        name: article
+        schema:
+          $ref: '#/definitions/models.ArticleCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Article created
+          schema:
+            $ref: '#/definitions/models.ArticleDto'
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Create article
+      tags:
+      - article
   /api/v1/article/{record_id}/is_main:
     post:
       consumes:
@@ -262,38 +303,6 @@ paths:
           description: Article
           schema:
             $ref: '#/definitions/models.ArticleDto'
-        "404":
-          description: Article not found
-          schema:
-            type: string
-        "422":
-          description: Unprocessable entity
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Get main article
-      tags:
-      - article
-  /api/v1/article/alternative:
-    post:
-      consumes:
-      - application/json
-      description: Create alternative article for record by record_id
-      parameters:
-      - description: Article info for create
-        in: body
-        name: article
-        required: true
-        schema:
-          $ref: '#/definitions/models.ArticleCreate'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Article created
-          schema:
-            type: string
         "403":
           description: Forbidden
           schema:
@@ -308,7 +317,7 @@ paths:
             type: string
       security:
       - Bearer: []
-      summary: Create alternative article
+      summary: Get main article
       tags:
       - article
   /api/v1/record/{record_id}:

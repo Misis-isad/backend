@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateArticleWithRecordID(c *gin.Context, recordID uint, mlResponse models.MlResponse) (models.ArticleDto, error) {
+func CreateArticleWithRecordID(c *gin.Context, recordDb models.Record, mlResponse models.MlResponse) (models.ArticleDto, error) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	articleDb := models.Article{
 		Body:     mlResponse.Body,
-		RecordID: recordID,
+		RecordID: recordDb.ID,
 		IsMain:   true,
 	}
 	err := db.Model(&models.Article{}).Create(&articleDb).Error
@@ -20,23 +20,29 @@ func CreateArticleWithRecordID(c *gin.Context, recordID uint, mlResponse models.
 		return models.ArticleDto{}, err
 	}
 
-	err = db.Model(&models.Record{}).Where("id = ?", recordID).Updates(&models.Record{
+	err = db.Model(&recordDb).Updates(&models.Record{
 		Title:          mlResponse.Title,
 		PreviewPicture: mlResponse.PreviewPicture,
+		Status:         models.RecordStatusReady,
 	}).Error
 	if err != nil {
 		return models.ArticleDto{}, err
 	}
 
-	// FIXME: не работает
-	// err = db.Model(&models.Record{}).Association("Articles").Append(&articleDb)
-	// if err != nil {
-	// 	return models.ArticleDto{}, err
-	// }
+	err = db.Model(&models.Article{}).Not("id", articleDb.ID).Where("record_id = ?", recordDb.ID).Update("is_main", false).Error
+	if err != nil {
+		return models.ArticleDto{}, err
+	}
+
+	err = db.Model(&recordDb).Association("Articles").Append(&articleDb)
+	if err != nil {
+		return models.ArticleDto{}, err
+	}
 
 	return models.ArticleDto{
-		ID:   articleDb.ID,
-		Body: articleDb.Body,
+		ID:     articleDb.ID,
+		Body:   articleDb.Body,
+		IsMain: articleDb.IsMain,
 	}, nil
 }
 
@@ -82,27 +88,27 @@ func SetIsMainArticle(c *gin.Context, recordID uint, articleID uint) error {
 	return nil
 }
 
-func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {
-	db := c.MustGet("db").(*gorm.DB)
+// func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {
+// 	db := c.MustGet("db").(*gorm.DB)
 
-	articleDb := models.Article{
-		Body:     articleData.Body,
-		RecordID: articleData.RecordID,
-		IsMain:   false,
-	}
-	err := db.Model(&models.Article{}).Create(&articleDb).Error
-	if err != nil {
-		return models.ArticleDto{}, err
-	}
+// 	articleDb := models.Article{
+// 		Body:     articleData.Body,
+// 		RecordID: articleData.RecordID,
+// 		IsMain:   false,
+// 	}
+// 	err := db.Model(&models.Article{}).Create(&articleDb).Error
+// 	if err != nil {
+// 		return models.ArticleDto{}, err
+// 	}
 
-	// FIXME: не работает
-	// err = db.Model(&models.Record{}).Association("Articles").Append(&articleDb)
-	// if err != nil {
-	// 	return models.ArticleDto{}, err
-	// }
+// 	// FIXME: не работает
+// 	// err = db.Model(&models.Record{}).Association("Articles").Append(&articleDb)
+// 	// if err != nil {
+// 	// 	return models.ArticleDto{}, err
+// 	// }
 
-	return models.ArticleDto{
-		ID:   articleDb.ID,
-		Body: articleDb.Body,
-	}, nil
-}
+// 	return models.ArticleDto{
+// 		ID:   articleDb.ID,
+// 		Body: articleDb.Body,
+// 	}, nil
+// }
