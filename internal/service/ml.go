@@ -1,8 +1,7 @@
 package service
 
 import (
-	"io"
-	"net/http"
+	"os"
 	"profbuh/internal/models"
 
 	"github.com/gin-gonic/gin"
@@ -12,12 +11,18 @@ func GenerateArticle(c *gin.Context, record *models.RecordDto) (models.MlRespons
 	// запрос к МЛ для получения статьи
 	// получаем body, title, previewPicture, urls
 
-	r, err := http.Get("http://larek.itatmisis.ru:10000/static/file/eac0a7ec83537763d3ba7671828d0989")
-	if err != nil {
-		return models.MlResponse{}, err
-	}
+	// FIXME: починить запрос к МЛ
+	// r, err := http.Get("http://larek.itatmisis.ru:10000/static/file/eac0a7ec83537763d3ba7671828d0989")
+	// if err != nil {
+	// 	return models.MlResponse{}, err
+	// }
 
-	articleBody, err := io.ReadAll(r.Body)
+	// articleBody, err := io.ReadAll(r.Body)
+	// if err != nil {
+	// 	return models.MlResponse{}, err
+	// }
+
+	articleBody, err := os.ReadFile("../../test.html")
 	if err != nil {
 		return models.MlResponse{}, err
 	}
