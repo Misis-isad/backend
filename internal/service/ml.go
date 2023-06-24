@@ -1,8 +1,15 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
+	"profbuh/internal/config"
+	"profbuh/internal/logging"
 	"profbuh/internal/models"
 	"time"
 
@@ -10,47 +17,54 @@ import (
 )
 
 func GenerateArticle(ctx context.Context, db *gorm.DB, record models.Record) (models.MlResponse, error) {
-	// json, err := json.Marshal(record)
-	// if err != nil {
-	// 	return models.MlResponse{}, err
-	// }
+	var mlResponse models.MlResponse
 
-	// logging.Log.Debugf("Sending POST request with %v to larek", string(json))
-	// request, err := http.NewRequestWithContext(c, "POST", "http://larek.itatmisis.ru:10001/generate_article", bytes.NewBuffer(json))
-	// if err != nil {
-	// 	return models.MlResponse{}, err
-	// }
-	// request.Header.Set("Content-Type", "application/json")
+	if config.Cfg.MlService == "true" {
+		jsonRecord, err := json.Marshal(record)
+		if err != nil {
+			return models.MlResponse{}, err
+		}
 
-	// client := &http.Client{}
-	// resp, err := client.Do(request)
-	// if err != nil {
-	// 	return models.MlResponse{}, err
-	// }
-	// if resp.StatusCode != http.StatusOK {
-	// 	errDesc, _ := io.ReadAll(resp.Body)
-	// 	logging.Log.Debug(string(errDesc))
-	// 	return models.MlResponse{}, fmt.Errorf("%d", resp.StatusCode)
-	// }
-	// defer resp.Body.Close()
+		logging.Log.Debugf("Sending POST request with %v to larek", string(jsonRecord))
 
-	// data, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return models.MlResponse{}, err
-	// }
-	// logging.Log.Debugf("Received: %v", string(data))
+		request, err := http.Post("http://larek.itatmisis.ru:10001/generate_article", "application/json", bytes.NewBuffer(jsonRecord))
+		if err != nil {
+			return models.MlResponse{}, err
+		}
+		logging.Log.Debugf("Request: %v", request)
 
-	articleBody, err := os.ReadFile("test.html")
-	if err != nil {
-		return models.MlResponse{}, err
-	}
+		if request.StatusCode != http.StatusOK {
+			return models.MlResponse{}, fmt.Errorf("%d", request.StatusCode)
+		}
 
-	time.Sleep(25 * time.Second)
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			return models.MlResponse{}, err
+		}
+		logging.Log.Debugf("Received: %v", string(body))
 
-	mlResponse := models.MlResponse{
-		Body:           string(articleBody),
-		Title:          "record title",
-		PreviewPicture: "preview_url",
+		err = json.Unmarshal(body, &mlResponse)
+		if err != nil {
+			return models.MlResponse{}, err
+		}
+		logging.Log.Debugf("Unmarshalled: %v", mlResponse)
+	} else {
+
+		time.Sleep(15 * time.Second)
+
+		articleBody, err := os.ReadFile("test.html")
+		if err != nil {
+			return models.MlResponse{}, err
+		}
+
+		urls := make(map[string]string, 1)
+		urls["https://picsum.photos/200/300"] = "https://picsum.photos/200/300"
+
+		mlResponse = models.MlResponse{
+			Body:   string(articleBody),
+			Title:  "title",
+			Images: urls,
+		}
 	}
 
 	return mlResponse, nil

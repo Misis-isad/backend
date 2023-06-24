@@ -15,6 +15,8 @@ type Config struct {
 	ServerPort string
 	GinMode    string
 	JwtSecret  string
+
+	MlService string
 }
 
 var Cfg Config
@@ -33,6 +35,7 @@ func LoadConfig() error {
 		ServerPort: os.Getenv("SERVER_PORT"),
 		GinMode:    os.Getenv("GIN_MODE"),
 		JwtSecret:  os.Getenv("JWT_SECRET"),
+		MlService:  os.Getenv("ML_SERVICE"),
 	}
 	return nil
 

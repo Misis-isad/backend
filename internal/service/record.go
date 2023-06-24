@@ -23,6 +23,7 @@ func CreateRecord(c *gin.Context, recordData models.RecordCreate, email string, 
 		return models.RecordDto{}, err
 	}
 
+	logging.Log.Debug("Starting background ml create article")
 	go BackgroundMlCreateArticle(recordDb, db)
 
 	return recordDb.ToDto(), nil

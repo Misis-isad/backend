@@ -9,8 +9,9 @@ type TokenResponse struct {
 }
 
 type MlResponse struct {
-	Body           string `json:"body" binding:"required" example:"{html page}" format:"html"`
-	Title          string `json:"title" binding:"required" example:"{title}" format:"string"`
-	PreviewPicture string `json:"preview_picture" binding:"required" example:"{url}" format:"url"`
+	Body   string            `json:"body" binding:"required" example:"{html page}" format:"html"`
+	Title  string            `json:"title" binding:"required" example:"{title}" format:"string"`
+	Images map[string]string `json:"images" binding:"required"`
+	// PreviewPicture string   `json:"preview_picture" binding:"required" example:"{url}" format:"url"`
 	// MediaUrls	  []string `json:"media_urls" binding:"required" example:"[{url}]" format:"url"`
 }

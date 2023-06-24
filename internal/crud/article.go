@@ -1,6 +1,7 @@
 package crud
 
 import (
+	"profbuh/internal/logging"
 	"profbuh/internal/models"
 
 	"github.com/gin-gonic/gin"
@@ -91,8 +92,18 @@ func BackgroundMlCreateArticle(recordDb models.Record, mlResponse models.MlRespo
 		return err
 	}
 
+	var previewPicture string
+	for _, image := range mlResponse.Images {
+		previewPicture = image
+		break
+	}
+
+	logging.Log.Debugf("previewPicture: %v", previewPicture)
+
 	err = db.Model(&recordDb).Updates(&models.Record{
-		Status: models.RecordStatusReady,
+		Status:         models.RecordStatusReady,
+		PreviewPicture: previewPicture,
+		Title:          mlResponse.Title,
 	}).Error
 	if err != nil {
 		return err
@@ -105,28 +116,3 @@ func BackgroundMlCreateArticle(recordDb models.Record, mlResponse models.MlRespo
 
 	return nil
 }
-
-// func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {
-// 	db := c.MustGet("db").(*gorm.DB)
-
-// 	articleDb := models.Article{
-// 		Body:     articleData.Body,
-// 		RecordID: articleData.RecordID,
-// 		IsMain:   false,
-// 	}
-// 	err := db.Model(&models.Article{}).Create(&articleDb).Error
-// 	if err != nil {
-// 		return models.ArticleDto{}, err
-// 	}
-
-// 	// FIXME: не работает
-// 	// err = db.Model(&models.Record{}).Association("Articles").Append(&articleDb)
-// 	// if err != nil {
-// 	// 	return models.ArticleDto{}, err
-// 	// }
-
-// 	return models.ArticleDto{
-// 		ID:   articleDb.ID,
-// 		Body: articleDb.Body,
-// 	}, nil
-// }

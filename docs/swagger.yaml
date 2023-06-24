@@ -320,41 +320,6 @@ paths:
       summary: Get main article
       tags:
       - article
-  /api/v1/article/{record_id}/video_link:
-    get:
-      consumes:
-      - application/json
-      description: Get video link for article by record_id
-      parameters:
-      - description: Record id
-        in: path
-        name: record_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Video link
-          schema:
-            type: string
-        "403":
-          description: Forbidden
-          schema:
-            type: string
-        "404":
-          description: Article not found
-          schema:
-            type: string
-        "422":
-          description: Unprocessable entity
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Get video link
-      tags:
-      - article
   /api/v1/record/{record_id}:
     delete:
       consumes:
@@ -492,6 +457,37 @@ paths:
       security:
       - Bearer: []
       summary: Get records by user
+      tags:
+      - record
+  /api/v1/record/by_article/{article_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get record for article by article_id
+      parameters:
+      - description: Article id
+        in: path
+        name: article_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Found record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get record
       tags:
       - record
   /api/v1/record/create:

@@ -103,3 +103,21 @@ func DeleteRecord(c *gin.Context, recordID uint, userDb models.User) error {
 
 	return nil
 }
+
+func GetRecordByArticleID(c *gin.Context, articleID uint) (models.RecordDto, error) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	var articleDb models.Article
+	err := db.Model(&models.Article{}).Where("id = ?", articleID).First(&articleDb).Error
+	if err != nil {
+		return models.RecordDto{}, err
+	}
+
+	var recordDb models.Record
+	err = db.Model(&models.Record{}).Where("id = ?", articleDb.RecordID).First(&recordDb).Error
+	if err != nil {
+		return models.RecordDto{}, err
+	}
+
+	return recordDb.ToDto(), nil
+}

@@ -137,48 +137,12 @@ func BackgroundMlCreateArticle(recordDb models.Record, db *database.Database) er
 	return nil
 }
 
-func GetVideoLinkForArticleByRecordID(c *gin.Context, recordID uint) (string, error) {
-	userDb, err := crud.GetUserByEmail(c, c.GetString("x-user-email"))
+func GetRecordByArticleID(c *gin.Context, articleID uint) (models.RecordDto, error) {
+	record, err := crud.GetRecordByArticleID(c, articleID)
 	if err != nil {
-		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
-		return "", err
+		logging.Log.Errorf("GetRecordByArticleID, can't find Record: %v", err)
+		return models.RecordDto{}, err
 	}
 
-	recordDb, err := crud.GetRecordByID(c, recordID)
-	if err != nil {
-		logging.Log.Errorf("GetRecordByID, can't find Record: %v", err)
-		return "", err
-	}
-
-	if recordDb.UserID != userDb.ID && !recordDb.Published {
-		return "", errors.New("forbidden")
-	}
-
-	return recordDb.VideoLink, nil
+	return record, nil
 }
-
-// func CreateAlternativeArticleWithRecordID(c *gin.Context, articleData models.ArticleCreate) (models.ArticleDto, error) {
-// 	userDb, err := crud.GetUserByEmail(c, c.GetString("x-user-email"))
-// 	if err != nil {
-// 		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
-// 		return models.ArticleDto{}, err
-// 	}
-
-// 	recordDb, err := crud.GetRecordByID(c, articleData.RecordID)
-// 	if err != nil {
-// 		logging.Log.Errorf("GetRecordByID, can't find Record: %v", err)
-// 		return models.ArticleDto{}, err
-// 	}
-
-// 	if recordDb.UserID != userDb.ID {
-// 		return models.ArticleDto{}, errors.New("forbidden")
-// 	}
-
-// 	article, err := crud.CreateAlternativeArticleWithRecordID(c, articleData)
-// 	if err != nil {
-// 		logging.Log.Errorf("CreateAlternativeArticleWithRecordID, can't create Article: %v", err)
-// 		return models.ArticleDto{}, err
-// 	}
-
-// 	return article, nil
-// }

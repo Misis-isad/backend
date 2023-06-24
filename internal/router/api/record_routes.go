@@ -22,6 +22,7 @@ func InitRecordRoutes(r *gin.Engine, db *database.Database) {
 		router.POST("/:record_id/published_status", SetPublishedStatus)
 		router.GET("/published", GetPublishedRecords)
 		router.DELETE("/:record_id", DeleteRecord)
+		router.GET("/by_article/:article_id", GetRecordByArticleID)
 	}
 }
 
@@ -225,4 +226,33 @@ func DeleteRecord(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// GetRecordByArticleID godoc
+//
+//	@Summary		Get record
+//	@Description	Get record for article by article_id
+//	@Tags			record
+//	@Accept			json
+//	@Produce		json
+//	@Param			article_id	path	uint	true	"Article id"
+//	@Security		Bearer
+//	@Success		200	{object}	models.RecordDto	"Found record"
+//	@Failure		404	{object}	string				"Article not found"
+//	@Failure		422	{object}	string				"Unprocessable entity"
+//	@Router			/api/v1/record/by_article/{article_id} [get]
+func GetRecordByArticleID(c *gin.Context) {
+	articleId, err := strconv.ParseUint(c.Param("article_id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	record, err := service.GetRecordByArticleID(c, uint(articleId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, record)
 }
