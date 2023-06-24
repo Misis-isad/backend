@@ -36,7 +36,7 @@ func InitArticleRoutes(r *gin.Engine) {
 //	@Failure		403	{object}	string				"Forbidden"
 //	@Failure		404	{object}	string				"Article not found"
 //	@Failure		422	{object}	string				"Unprocessable entity"
-//	@Router			/api/v1/article/{record_id}/generate [post]
+//	@Router			/api/v1/article/{record_id} [post]
 func CreateArticleWithRecordID(c *gin.Context) {
 	recordID, err := strconv.ParseUint(c.Param("record_id"), 10, 32)
 	if err != nil {

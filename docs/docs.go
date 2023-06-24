@@ -16,6 +16,69 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/article/{record_id}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create article for record by record_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "Create article",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Record id",
+                        "name": "record_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Article info for create",
+                        "name": "article",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Article created",
+                        "schema": {
+                            "$ref": "#/definitions/models.ArticleDto"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/article/{record_id}/all": {
             "get": {
                 "security": [
@@ -73,69 +136,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Articles not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable entity",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/article/{record_id}/generate": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create article for record by record_id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "article"
-                ],
-                "summary": "Create article",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Record id",
-                        "name": "record_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Article info for create",
-                        "name": "article",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/models.ArticleCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Article created",
-                        "schema": {
-                            "$ref": "#/definitions/models.ArticleDto"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Article not found",
                         "schema": {
                             "type": "string"
                         }

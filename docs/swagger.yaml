@@ -160,6 +160,46 @@ info:
   description: This is a sample server for Profbuh API.
   title: Profbuh API
 paths:
+  /api/v1/article/{record_id}:
+    post:
+      consumes:
+      - application/json
+      description: Create article for record by record_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      - description: Article info for create
+        in: body
+        name: article
+        schema:
+          $ref: '#/definitions/models.ArticleCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Article created
+          schema:
+            $ref: '#/definitions/models.ArticleDto'
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Create article
+      tags:
+      - article
   /api/v1/article/{record_id}/all:
     get:
       consumes:
@@ -203,46 +243,6 @@ paths:
       security:
       - Bearer: []
       summary: Get articles
-      tags:
-      - article
-  /api/v1/article/{record_id}/generate:
-    post:
-      consumes:
-      - application/json
-      description: Create article for record by record_id
-      parameters:
-      - description: Record id
-        in: path
-        name: record_id
-        required: true
-        type: integer
-      - description: Article info for create
-        in: body
-        name: article
-        schema:
-          $ref: '#/definitions/models.ArticleCreate'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Article created
-          schema:
-            $ref: '#/definitions/models.ArticleDto'
-        "403":
-          description: Forbidden
-          schema:
-            type: string
-        "404":
-          description: Article not found
-          schema:
-            type: string
-        "422":
-          description: Unprocessable entity
-          schema:
-            type: string
-      security:
-      - Bearer: []
-      summary: Create article
       tags:
       - article
   /api/v1/article/{record_id}/is_main:
