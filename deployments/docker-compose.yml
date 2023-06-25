@@ -1,40 +1,6 @@
 version: '3.9'
 
 services:
-  traefik:
-    image: traefik:v2.9
-    restart: unless-stopped
-    dns:
-      - 1.1.1.1
-    env_file: ../.env
-    network_mode: "host"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./config:/etc/traefik"
-      - "certs-le:/certs/letsencrypt"
-    command:
-      # Tell Traefik to discover containers using the Docker API
-      - "--log.level=DEBUG"
-      - --providers.docker=true
-      - --providers.docker.exposedByDefault=false
-      # Set up custom certs
-      # - --providers.file.directory=/etc/traefik/dyn
-      # Set up ACME
-      - --certificatesresolvers.le.acme.email=tarasov.egor.yandex@gmail.com
-      - --certificatesresolvers.le.acme.storage=/certs/letsencrypt/acme.json
-      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
-      # Set up an insecure listener that redirects all traffic to TLS
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --entrypoints.websecure.address=:443
-      # Set up the TLS configuration for our websecure listener
-      - --entrypoints.websecure.http.tls=true
-      - --entrypoints.backendentry.address=:9999
-      - --entrypoints.backendentry.http.tls=true
-      - --entrypoints.websecure.http.tls=true
-      - --entrypoints.backendstatic.address=:10000
-      - --entrypoints.backendstatic.http.tls=true
   db:
     image: postgres:15
     restart: always
@@ -54,29 +20,15 @@ services:
       dockerfile: ./deployments/Dockerfile
     env_file:
       - ../.env
-    # ports:
-    #   - "9999:8000"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.backend.loadbalancer.server.port=9999"
-      - "traefik.http.routers.backend.rule=Host(`larek.itatmisis.ru`)"
-      - "traefik.http.routers.backend.tls.certresolver=le"
-      - "traefik.http.routers.backend.entrypoints=backendentry"
-      - "traefik.http.routers.backend.tls=true"
+    ports:
+      - "9999:8000"
 
   backend-static:
     restart: always
     build: ../../backend-static/
     env_file: ../../backend-static/.env
-    labels: 
-      - "traefik.enable=true"
-      - "traefik.http.services.backendstatic.loadbalancer.server.port=10000"
-      - "traefik.http.routers.backendstatic.rule=Host(`larek.itatmisis.ru`)"
-      - "traefik.http.routers.backendstatic.tls.certresolver=le"
-      - "traefik.http.routers.backendstatic.entrypoints=backendstatic"
-      - "traefik.http.routers.backendstatic.tls=true"
-    # ports:
-    #   - "10000:10000"
+    ports:
+      - "10000:10000"
   frontend:
     build:
       context: ../../frontend
@@ -84,15 +36,8 @@ services:
     restart: always
     depends_on:
       - backend
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.fronend.loadbalancer.server.port=8080"
-      - "traefik.http.routers.fronend.rule=Host(`larek.itatmisis.ru`)"
-      - "traefik.http.routers.fronend.tls.certresolver=le"
-      - "traefik.http.routers.fronend.entrypoints=websecure"
-      - "traefik.http.routers.fronend.tls=true"
-    
+    ports:
+      - "8000:8080"
 
 volumes:
   profbuh_pg:
-  certs-le:
