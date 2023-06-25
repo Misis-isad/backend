@@ -1,4 +1,126 @@
 definitions:
+  models.ArticleCreate:
+    description: Article create model
+    properties:
+      body:
+        example: '{html page}'
+        format: html
+        type: string
+    required:
+    - body
+    type: object
+  models.ArticleDto:
+    description: Article dto model
+    properties:
+      body:
+        example: '{html page}'
+        format: html
+        type: string
+      created_at:
+        example: "2021-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      is_main:
+        example: true
+        type: boolean
+    required:
+    - body
+    - created_at
+    - id
+    - is_main
+    type: object
+  models.RecordCreate:
+    description: Record create model
+    properties:
+      settings:
+        $ref: '#/definitions/models.RecordSettings'
+      video_link:
+        example: https://www.youtube.com/watch?v=rVUHUgEO6qE
+        format: url
+        type: string
+    required:
+    - settings
+    - video_link
+    type: object
+  models.RecordDto:
+    description: Record dto model
+    properties:
+      annotation_length:
+        example: 200
+        type: integer
+      article_length:
+        example: 1000
+        type: integer
+      end_timecode:
+        example: ""
+        type: string
+      id:
+        example: 1
+        type: integer
+      preview_picture:
+        example: picture url
+        format: url
+        type: string
+      published:
+        example: false
+        type: boolean
+      screenshot_timing:
+        example: 3
+        type: integer
+      start_timecode:
+        example: ""
+        type: string
+      status:
+        example: processing
+        type: string
+      title:
+        example: title
+        type: string
+      video_link:
+        example: https://www.youtube.com/watch?v=4O3UGW-Bbbw
+        format: url
+        type: string
+    required:
+    - id
+    - preview_picture
+    - published
+    - status
+    - title
+    - video_link
+    type: object
+  models.RecordSettings:
+    properties:
+      annotation_length:
+        example: 200
+        type: integer
+      article_length:
+        example: 1000
+        type: integer
+      end_timecode:
+        example: ""
+        type: string
+      screenshot_timing:
+        example: 3
+        type: integer
+      start_timecode:
+        example: ""
+        type: string
+    type: object
+  models.TokenResponse:
+    description: Token response model
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+    required:
+    - token
+    - token_type
+    type: object
   models.UserCreate:
     description: User create model
     properties:
@@ -6,40 +128,16 @@ definitions:
         example: test@test.ru
         format: email
         type: string
+      fio:
+        example: Мисосов Мисос Мисосович
+        type: string
       password:
         example: test
         type: string
     required:
     - email
+    - fio
     - password
-    type: object
-  models.UserDb:
-    description: User db model
-    properties:
-      email:
-        example: test@test.ru
-        format: email
-        type: string
-      id:
-        type: integer
-      password:
-        type: string
-    required:
-    - email
-    type: object
-  models.UserDto:
-    description: User dto model
-    properties:
-      email:
-        example: test@test.ru
-        format: email
-        type: string
-      id:
-        example: 1
-        type: integer
-    required:
-    - email
-    - id
     type: object
   models.UserLogin:
     description: User login model
@@ -61,27 +159,407 @@ info:
   description: This is a sample server for Profbuh API.
   title: Profbuh API
 paths:
-  /api/v1/test:
-    get:
+  /api/v1/article/{record_id}:
+    post:
       consumes:
       - application/json
-      description: Test middleware
+      description: Create article for record by record_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      - description: Article info for create
+        in: body
+        name: article
+        required: true
+        schema:
+          $ref: '#/definitions/models.ArticleCreate'
       produces:
       - application/json
       responses:
         "200":
-          description: Current user
+          description: Article created
           schema:
-            $ref: '#/definitions/models.UserDb'
-        "401":
-          description: Unauthorized
+            $ref: '#/definitions/models.ArticleDto'
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
           schema:
             type: string
       security:
       - Bearer: []
-      summary: Test middleware
+      summary: Create article
       tags:
-      - test
+      - article
+  /api/v1/article/{record_id}/all:
+    get:
+      consumes:
+      - application/json
+      description: Get articles for record by record_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ArticleDto'
+            type: array
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Articles not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get articles
+      tags:
+      - article
+  /api/v1/article/{record_id}/is_main:
+    post:
+      consumes:
+      - application/json
+      description: Set is_main for article by record_id and article_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      - description: Article id
+        in: query
+        name: article_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Article set as main
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Set is_main
+      tags:
+      - article
+  /api/v1/article/{record_id}/main:
+    get:
+      consumes:
+      - application/json
+      description: Get main article for record by record_id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Article
+          schema:
+            $ref: '#/definitions/models.ArticleDto'
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get main article
+      tags:
+      - article
+  /api/v1/record/{record_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete record
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "404":
+          description: Record not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Delete record
+      tags:
+      - record
+    get:
+      consumes:
+      - application/json
+      description: Get record by id
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "403":
+          description: Hidden record
+          schema:
+            type: string
+        "404":
+          description: Record not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get record by id
+      tags:
+      - record
+  /api/v1/record/{record_id}/published_status:
+    post:
+      consumes:
+      - application/json
+      description: Set published status
+      parameters:
+      - description: Record id
+        in: path
+        name: record_id
+        required: true
+        type: integer
+      - description: Published status
+        in: query
+        name: published
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Record published
+          schema:
+            type: string
+        "404":
+          description: Record not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Set published status
+      tags:
+      - record
+  /api/v1/record/all:
+    get:
+      consumes:
+      - application/json
+      description: Get all records(not articles) for current user
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Records
+          schema:
+            items:
+              $ref: '#/definitions/models.RecordDto'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get records by user
+      tags:
+      - record
+  /api/v1/record/by_article/{article_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get record for article by article_id
+      parameters:
+      - description: Article id
+        in: path
+        name: article_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Found record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "404":
+          description: Article not found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get record
+      tags:
+      - record
+  /api/v1/record/create:
+    post:
+      consumes:
+      - application/json
+      description: Create record
+      parameters:
+      - description: Record create info
+        in: body
+        name: record
+        required: true
+        schema:
+          $ref: '#/definitions/models.RecordCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created record
+          schema:
+            $ref: '#/definitions/models.RecordDto'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Create record
+      tags:
+      - record
+  /api/v1/record/published:
+    get:
+      consumes:
+      - application/json
+      description: Get all published records(not articles)
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Records
+          schema:
+            items:
+              $ref: '#/definitions/models.RecordDto'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: Get published records
+      tags:
+      - record
   /auth/user/create:
     post:
       consumes:
@@ -98,11 +576,15 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created user
+          description: Created token for user
           schema:
-            $ref: '#/definitions/models.UserDto'
+            $ref: '#/definitions/models.TokenResponse'
         "400":
           description: Bad request
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
           schema:
             type: string
       summary: Create user
@@ -126,9 +608,13 @@ paths:
         "200":
           description: Token
           schema:
-            type: string
+            $ref: '#/definitions/models.TokenResponse'
         "401":
           description: Unauthorized
+          schema:
+            type: string
+        "422":
+          description: Unprocessable entity
           schema:
             type: string
       summary: Login user

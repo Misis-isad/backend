@@ -1,15 +1,15 @@
 package service
 
 import (
-	"context"
 	"errors"
 	"profbuh/internal/config"
-	"profbuh/internal/database/crud"
+	"profbuh/internal/crud"
+	"profbuh/internal/logging"
 	"profbuh/internal/models"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,14 +18,14 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func CreateAccessToken(userData models.UserDb) (string, error) {
+func CreateAccessToken(email string) (string, error) {
 	key := []byte(config.Cfg.JwtSecret)
 
 	claims := Claims{
-		userData.Email,
+		email,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
-			Subject:   userData.Email,
+			Subject:   email,
 		},
 	}
 
@@ -51,17 +51,21 @@ func VerifyPassword(password, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
-func AuthenticateUser(db *pgxpool.Pool, c context.Context, userData models.UserLogin) (string, error) {
-	userDb, err := crud.GetUserByEmail(db, c, userData.Email)
+func AuthenticateUser(c *gin.Context, userData models.UserLogin) (string, error) {
+	userDb, err := crud.GetUserByEmail(c, userData.Email)
 	if err != nil {
+		logging.Log.Errorf("GetUserByEmail, can't find email: %v", err)
 		return "", err
 	}
-	if ok := VerifyPassword(userData.Password, userDb.Password); ok != nil {
-		return "", errors.New("invalid credentials")
+
+	if err := VerifyPassword(userData.Password, userDb.Password); err != nil {
+		logging.Log.Errorf("VerifyPassword, can't verify password: %v", err)
+		return "", err
 	}
 
-	token, err := CreateAccessToken(userDb)
+	token, err := CreateAccessToken(userDb.Email)
 	if err != nil {
+		logging.Log.Errorf("CreateAccessToken, can't create access token: %v", err)
 		return "", err
 	}
 

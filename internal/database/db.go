@@ -1,46 +1,32 @@
 package database
 
 import (
-	"context"
 	"fmt"
 	"profbuh/internal/config"
+	"profbuh/internal/logging"
+	"profbuh/internal/models"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-type Db struct {
-	Pool *pgxpool.Pool
+type Database struct {
+	Db *gorm.DB
 }
 
-func InitDb(config *config.Config) (*Db, error) {
-	connString := fmt.Sprintf("postgres://%s:%s@%s:5432/%s", config.DbUser, config.DbPassword, config.DbHost, config.DbName)
-	pool, err := pgxpool.New(context.Background(), connString)
+func InitDb(cfg *config.Config) (*Database, error) {
+	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", cfg.DbUser, cfg.DbPassword, cfg.DbHost, cfg.DbName)
+	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
+		logging.Log.Fatalf("Error connecting to database: %v", err)
 		return nil, err
 	}
 
-	db := &Db{
-		Pool: pool,
-	}
-
-	err = db.CreateTables()
+	err = db.AutoMigrate(&models.User{}, &models.Record{}, &models.Article{}, &models.Comment{} /*, &models.Media{}*/)
 	if err != nil {
+		logging.Log.Fatalf("Error migrating database: %v", err)
 		return nil, err
 	}
 
-	return db, nil
-}
-
-func (db *Db) CreateTables() error {
-	_, err := db.Pool.Query(context.Background(), `
-	CREATE TABLE IF NOT EXISTS users (
-		id SERIAL PRIMARY KEY,
-		email VARCHAR(255) UNIQUE NOT NULL,
-		password VARCHAR(255) NOT NULL
-	)`)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return &Database{Db: db}, nil
 }

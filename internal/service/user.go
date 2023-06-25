@@ -1,25 +1,28 @@
 package service
 
 import (
-	"context"
-	"profbuh/internal/database/crud"
+	"profbuh/internal/crud"
+	"profbuh/internal/logging"
 	"profbuh/internal/models"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUser(db *pgxpool.Pool, c context.Context, userData models.UserCreate) (models.UserDto, error) {
+func CreateUser(c *gin.Context, userData models.UserCreate) (models.UserDto, error) {
 	var err error
 	userData.Password, err = HashPassword(userData.Password)
 	if err != nil {
+		logging.Log.Errorf("CreateUser, can't hash password: %v", err)
 		return models.UserDto{}, err
 	}
 
-	user, err := crud.CreateUser(db, c, userData)
+	user, err := crud.CreateUser(c, userData)
 	if err != nil {
+		logging.Log.Errorf("CreateUser, can't add User to db: %v", err)
 		return models.UserDto{}, err
 	}
+
 	return user, nil
 }
 
