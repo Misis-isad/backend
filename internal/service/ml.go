@@ -52,7 +52,20 @@ func GenerateArticle(ctx context.Context, db *gorm.DB, record models.Record) (mo
 
 		time.Sleep(15 * time.Second)
 
-		articleBody, err := os.ReadFile("test.html")
+		var file, title string
+		switch record.VideoLink {
+		case "https://www.youtube.com/watch?v=PO2QOECuZT4":
+			file = "short"
+			title = "Новые требования к учёту выплат в 1С"
+		case "https://www.youtube.com/watch?v=rVUHUgEO6qE":
+			file = "medium"
+			title = "Возврат товаров продавцу на общей системе налогообложения от покупателя на УСН: особенности учета"
+		case "https://www.youtube.com/watch?v=J4xHVccHTHk":
+			file = "large"
+			title = "Руководство по единому налоговому счету: уведомления, платежи и формирование проводок"
+		}
+
+		articleBody, err := os.ReadFile("static/" + file + ".html")
 		if err != nil {
 			return models.MlResponse{}, err
 		}
@@ -62,7 +75,7 @@ func GenerateArticle(ctx context.Context, db *gorm.DB, record models.Record) (mo
 
 		mlResponse = models.MlResponse{
 			Body:   string(articleBody),
-			Title:  "title",
+			Title:  title,
 			Images: urls,
 		}
 	}
