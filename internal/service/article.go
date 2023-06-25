@@ -133,7 +133,7 @@ func BackgroundMlCreateArticle(recordDb models.Record, db *database.Database) er
 		return err
 	}
 
-	logging.Log.Debug("ML response success")
+	logging.Log.Debugf("ML response success, video: %v", recordDb.VideoLink)
 	return nil
 }
 

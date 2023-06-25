@@ -15,6 +15,7 @@ type Config struct {
 	ServerPort string
 	GinMode    string
 	JwtSecret  string
+	LarekUrl   string
 
 	MlService string
 }
@@ -36,11 +37,7 @@ func LoadConfig() error {
 		GinMode:    os.Getenv("GIN_MODE"),
 		JwtSecret:  os.Getenv("JWT_SECRET"),
 		MlService:  os.Getenv("ML_SERVICE"),
+		LarekUrl:   os.Getenv("LAREK_URL"),
 	}
 	return nil
-
-	// if err := env.Parse(&Cfg); err != nil {
-	// 	return err
-	// }
-	// return nil
 }
